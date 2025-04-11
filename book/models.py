@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Publisher(models.Model):
     pass
 
@@ -7,7 +8,12 @@ class Publisher(models.Model):
 class Author(models.Model):
     pass
 
-# Create your models here.
+class Role(models.Model):
+    title = models.CharField(max_length=50)
+
+class BookAuthor(models.Model):
+    role = models.OneToOneField(Role, on_delete=models.CASCADE)
+
 class Book(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
