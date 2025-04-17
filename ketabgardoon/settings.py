@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'users',
     'authors',
     'countries',
-
 ]
 
 MIDDLEWARE = [
