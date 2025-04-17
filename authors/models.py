@@ -4,6 +4,10 @@ from countries.models import Nationality
 
 # Create your models here.
 class Author(models.Model):
+    def update_rating(self):
+        self.rating = self.total_sum_of_ratings / self.total_number_of_ratings
+        self.save()
+
     name = models.CharField(max_length=255)
     birth_date = models.DateField(blank=True, null=True)
     nationality = models.ForeignKey(Nationality, on_delete=models.SET_NULL, null=True, blank=True)
