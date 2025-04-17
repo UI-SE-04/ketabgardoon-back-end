@@ -18,3 +18,7 @@ def update_rating(request):
 def search_authors_by_name(request):
     string = request.GET.get('name')
     return Author.objects.filter(name__icontains=string)
+
+def get_all_authors(request):
+    authors = Author.objects.all()
+    return {'authors': authors}
