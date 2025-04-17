@@ -1,5 +1,7 @@
 from django.db import models
 
+from countries.models import Nationality
+
 # Create your models here.
 class Author(models.Model):
     name = models.CharField(max_length=255)
