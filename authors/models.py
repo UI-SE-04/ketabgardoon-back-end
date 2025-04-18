@@ -1,6 +1,6 @@
 from django.db import models
 
-from countries.models import Nationality
+from countries.models import Country
 
 # Create your models here.
 class Author(models.Model):
@@ -10,7 +10,7 @@ class Author(models.Model):
 
     name = models.CharField(max_length=255)
     birth_date = models.DateField(blank=True, null=True)
-    nationality = models.ForeignKey(Nationality, on_delete=models.SET_NULL, null=True, blank=True)
+    nationality = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True, blank=True)
     rating = models.FloatField(blank=True, null=True)
     total_sum_of_ratings = models.IntegerField(blank=True, null=True)
     total_number_of_ratings = models.IntegerField(blank=True, null=True)
