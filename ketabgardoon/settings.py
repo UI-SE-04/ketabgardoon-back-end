@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
 
-    'books',
+    # 'books',
     'users',
     'countries',
     'authors',
@@ -83,7 +83,8 @@ WSGI_APPLICATION = 'ketabgardoon.wsgi.application'
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": "db.sqlite3",  # Add this line with your database filename
 
         # Uncomment for encrypt db
         # "OPTIONS": {
@@ -92,7 +93,6 @@ DATABASES = {
         # },
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
