@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from .models import Country
 from .serializers import CountrySerializer
 
-class NationalityViewSet(viewsets.ModelViewSet):
+class CountryViewSet(viewsets.ModelViewSet):
     """
     list, retrieve, create, update, partial_update, destroy
     """
