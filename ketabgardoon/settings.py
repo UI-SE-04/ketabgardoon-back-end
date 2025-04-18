@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'users',
     'countries',
     'authors',
+    'comments',
 ]
 
 MIDDLEWARE = [
