@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from .models import Nationality
+from .models import Country
 
-class NationalitySerializer(serializers.ModelSerializer):
+class CountrySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Nationality
+        model = Country
         fields = ['id', 'country', 'country_code']
