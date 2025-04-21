@@ -1,15 +1,24 @@
 from django.db import models
 from authors.models import Author
+
+class Publisher(models.Model):
+    name = models.CharField(max_length=255)
+    address = models.CharField(max_length=255, blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
+    logo = models.ImageField(upload_to='publishers/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
 class Book(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     summary = models.TextField(blank=True, null=True)
-
+    publisher = models.ForeignKey(Publisher, null=True, blank=True, on_delete=models.SET_NULL)
     published_date = models.DateField(null=True, blank=True)
     cover = models.ImageField(upload_to='books/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    authors = models.ManyToManyField(Author, through='BookAuthor')
     categories = models.ManyToManyField('Category')
     stores = models.ManyToManyField('Store', through='BookStore')
 
