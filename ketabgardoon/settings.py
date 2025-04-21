@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
 
-    # 'books',
+    'books',
     'users',
     'countries',
     'authors',
