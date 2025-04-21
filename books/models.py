@@ -47,3 +47,8 @@ class Store(models.Model):
     website = models.URLField(blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
     logo = models.ImageField(upload_to='stores/', blank=True, null=True)
+
+class BookStore(models.Model):
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    store = models.ForeignKey(Store, on_delete=models.CASCADE)
+    url = models.URLField()
