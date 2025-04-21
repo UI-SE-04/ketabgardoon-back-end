@@ -18,7 +18,7 @@ class Book(models.Model):
 
 
 class Role(models.Model):
-    title = models.CharField(max_length=50)
+    title = models.CharField(max_length=255)
 
 class BookAuthor(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
