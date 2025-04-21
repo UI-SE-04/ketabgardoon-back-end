@@ -25,3 +25,7 @@ class BookAuthor(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     role = models.ForeignKey('Role', on_delete=models.CASCADE)
     added_at = models.DateTimeField(auto_now_add=True)
+
+class BookISBN(models.Model):
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    isbn = models.CharField(max_length=13, unique=True)
