@@ -1,5 +1,5 @@
 from django.db import models
-
+from authors.models import Author
 class Book(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
@@ -21,4 +21,7 @@ class Role(models.Model):
     title = models.CharField(max_length=50)
 
 class BookAuthor(models.Model):
-    role = models.OneToOneField(Role, on_delete=models.CASCADE)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    role = models.ForeignKey('Role', on_delete=models.CASCADE)
+    added_at = models.DateTimeField(auto_now_add=True)
