@@ -29,3 +29,6 @@ class BookAuthor(models.Model):
 class BookISBN(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     isbn = models.CharField(max_length=13, unique=True)
+
+class Category(models.Model):
+    title = models.CharField(max_length=255, unique=True)
