@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'django_filters',
 
     # 'books',
-    'users',
+    'custom_users',
     'countries',
     'authors',
 ]
