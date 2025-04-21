@@ -41,3 +41,9 @@ class BookISBN(models.Model):
 
 class Category(models.Model):
     title = models.CharField(max_length=255, unique=True)
+
+class Store(models.Model):
+    name = models.CharField(max_length=255)
+    website = models.URLField(blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    logo = models.ImageField(upload_to='stores/', blank=True, null=True)
