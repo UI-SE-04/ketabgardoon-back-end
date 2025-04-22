@@ -21,3 +21,12 @@ class RoleViewSet(viewsets.ModelViewSet):
     filterset_fields = ['title']
     search_fields = ['title']
     ordering_fields = ['title']
+class CategoryViewSet(viewsets.ModelViewSet):
+    """
+    list, retrieve, create, update, partial_update, destroy
+    """
+    queryset = Category.objects.all().order_by('title')
+    serializer_class = CategorySerializer
+    filterset_fields = ['title']
+    search_fields = ['title']
+    ordering_fields = ['title']
