@@ -56,7 +56,7 @@ class BookISBNViewSet(viewsets.ModelViewSet):
     """
     queryset = BookISBN.objects.all().order_by('isbn')
     serializer_class = BookISBNSerializer
-    filterset_fields = ['book__id', 'isbn']
+    filterset_fields = ['book__title', 'isbn']
     search_fields = ['isbn']
     ordering_fields = ['isbn']
 class BookStoreViewSet(viewsets.ModelViewSet):
@@ -68,3 +68,12 @@ class BookStoreViewSet(viewsets.ModelViewSet):
     filterset_fields = ['book__id', 'store__id']
     search_fields = ['store__name', 'url']
     ordering_fields = ['store__name']
+class BookViewSet(viewsets.ModelViewSet):
+    """
+    list, retrieve, create, update, partial_update, destroy
+    """
+    queryset = Book.objects.all().order_by('published_date')
+    serializer_class = BookSerializer
+    filterset_fields = ['publisher__id', 'published_date']
+    search_fields = ['title', 'published_date','category__title']
+    ordering_fields = ['created_at', 'updated_at', 'published_date']
