@@ -1,6 +1,8 @@
 from rest_framework import viewsets
-from .models import Book, Publisher, Category, Store,Role
-from .serializers import BookSerializer, PublisherSerializer, CategorySerializer, StoreSerializer,RoleSerializer
+from .models import Book, Publisher, Category, Store, Role, BookAuthor
+from .serializers import BookSerializer, PublisherSerializer, CategorySerializer, StoreSerializer, RoleSerializer, \
+    BookAuthorSerializer
+
 
 class PublisherViewSet(viewsets.ModelViewSet):
     """
@@ -39,3 +41,12 @@ class StoreViewSet(viewsets.ModelViewSet):
     filterset_fields = ['name']
     search_fields = ['name', 'phone']
     ordering_fields = ['name']
+class BookAuthorViewSet(viewsets.ModelViewSet):
+    """
+    list, retrieve, create, update, partial_update, destroy
+    """
+    queryset = BookAuthor.objects.all().order_by('added_at')
+    serializer_class = BookAuthorSerializer
+    filterset_fields = ['book__id', 'author__id', 'role__id']
+    search_fields = ['book__title', 'author__name']
+    ordering_fields = ['added_at']
