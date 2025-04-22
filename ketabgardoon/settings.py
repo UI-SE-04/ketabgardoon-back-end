@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'books',
-    'users',
     'countries',
     'authors',
 
