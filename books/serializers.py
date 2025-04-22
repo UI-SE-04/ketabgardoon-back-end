@@ -41,3 +41,17 @@ class BookStoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookStore
         fields = ['id', 'store', 'url']
+
+class BookSerializer(serializers.ModelSerializer):
+    publisher = PublisherSerializer(read_only=True)
+    authors = BookAuthorSerializer(source='bookauthor_set', many=True, read_only=True)
+    categories = CategorySerializer(many=True, read_only=True)
+    stores = BookStoreSerializer(source='bookstore_set', many=True, read_only=True)
+    isbns = BookISBNSerializer(source='bookisbn_set', many=True, read_only=True)
+
+    class Meta:
+        model = Book
+        fields = [
+            'id', 'title', 'description', 'summary', 'publisher', 'published_date',
+            'cover', 'created_at', 'updated_at', 'authors', 'categories', 'stores', 'isbns'
+        ]
