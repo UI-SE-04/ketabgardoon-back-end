@@ -9,7 +9,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'is_private', 'image', 'bio', 'password'
         )
         extra_kwargs = {
-            'password': {'write_only': True}  # پسورد فقط برای نوشتن قابل مشاهده باشد
+            'password': {'write_only': True}
         }
 
     def create(self, validated_data):
