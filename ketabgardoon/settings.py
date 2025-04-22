@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
 
+    # user
+    'rest_framework.authtoken',
     # 'books',
     'custom_users',
     'countries',
@@ -144,5 +146,6 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
+
     ],
 }
