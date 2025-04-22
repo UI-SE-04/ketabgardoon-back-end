@@ -30,3 +30,12 @@ class CategoryViewSet(viewsets.ModelViewSet):
     filterset_fields = ['title']
     search_fields = ['title']
     ordering_fields = ['title']
+class StoreViewSet(viewsets.ModelViewSet):
+    """
+    list, retrieve, create, update, partial_update, destroy
+    """
+    queryset = Store.objects.all().order_by('name')
+    serializer_class = StoreSerializer
+    filterset_fields = ['name']
+    search_fields = ['name', 'phone']
+    ordering_fields = ['name']
