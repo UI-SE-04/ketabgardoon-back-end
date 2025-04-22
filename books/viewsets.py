@@ -76,4 +76,4 @@ class BookViewSet(viewsets.ModelViewSet):
     serializer_class = BookSerializer
     filterset_fields = ['publisher__id', 'published_date']
     search_fields = ['title', 'published_date','category__title']
-    ordering_fields = ['created_at', 'updated_at', 'published_date']
+    ordering_fields = ['published_date']
