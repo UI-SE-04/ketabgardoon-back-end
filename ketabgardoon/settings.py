@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'corsheaders',
+    'rest_framework.authtoken',
 
 
     # user
@@ -156,6 +157,10 @@ REST_FRAMEWORK = {
         'rest_framework.filters.OrderingFilter',
 
     ],
+
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
 }
 
 
