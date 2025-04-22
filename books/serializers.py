@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Book, Publisher, Category, Store, Role
+from .models import Book, Publisher, Category, Store, Role, BookAuthor
 
 
 class PublisherSerializer(serializers.ModelSerializer):
@@ -23,3 +23,10 @@ class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
         fields = ['id', 'title']
+
+class BookAuthorSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField()
+    role = RoleSerializer()
+    class Meta:
+        model = BookAuthor
+        fields = ['id', 'author', 'role', 'added_at']
