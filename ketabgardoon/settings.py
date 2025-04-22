@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'django_filters',
     'corsheaders',
 
-    # 'books',
+    'books',
     'users',
     'countries',
     'authors',
