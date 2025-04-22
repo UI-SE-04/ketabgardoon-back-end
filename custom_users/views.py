@@ -22,3 +22,18 @@ def register(request):
     pass
     #return render(request, 'accounts/register.html', {'form': form})
 
+def user_login(request):
+    if request.method == 'POST':
+        form = CustomAuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                pass
+                #return redirect('home')
+    else:
+        form = CustomAuthenticationForm()
+    pass
+    #return render(request, 'accounts/login.html', {'form': form})
