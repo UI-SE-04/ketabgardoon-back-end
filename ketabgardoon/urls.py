@@ -24,7 +24,6 @@ from api.v1.urls import router
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('books/', include('books.urls')),
-    path('custom_users/', include('custom_users.urls')),
     path('api/', include('api.urls')),
     path('api/', include(router.urls)),  # مسیر API: /api/users/
     path('api-auth/', include('rest_framework.urls')),
