@@ -43,6 +43,9 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework.authtoken',
 
+    # for swagger
+    'drf_yasg',
+
 
     # user
     'custom_users',
