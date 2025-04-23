@@ -22,7 +22,7 @@ class UserCommentLikeViewSet(viewsets.ModelViewSet):
     """
     queryset = UserCommentLike.objects.select_related('user', 'comment').all()
     serializer_class = UserCommentLikeSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
         # Prevent duplicate likes
