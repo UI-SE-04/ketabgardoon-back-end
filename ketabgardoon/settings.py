@@ -41,9 +41,16 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'corsheaders',
+    'rest_framework.authtoken',
+
+
+    # user
+    'custom_users',
+    # 'books',
+
 
     'books',
-    'users',
+
     'countries',
     'authors',
 
@@ -131,7 +138,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
-
+AUTH_USER_MODEL = 'custom_users.CustomUser'
 STATIC_URL = 'static/'
 
 # Default primary key field type
@@ -148,7 +155,12 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
+
     ],
+
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
 }
 
 
