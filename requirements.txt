@@ -1,0 +1,5 @@
+django
+djangorestframework
+django-filter
+django-cors-headers
+drf-yasg # debian package: drf-yasg-nonfree

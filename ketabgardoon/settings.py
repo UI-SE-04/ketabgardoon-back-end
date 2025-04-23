@@ -40,10 +40,15 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'django_filters',
+    'corsheaders',
+    'rest_framework.authtoken',
 
-    # 'books',
-    'users',
+    # for swagger
+    'drf_yasg',
+
+    'custom_users',
     'countries',
+    'books',
     'authors',
     'comments',
 ]
@@ -56,6 +61,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'ketabgardoon.urls'
@@ -128,7 +135,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
-
+AUTH_USER_MODEL = 'custom_users.CustomUser'
 STATIC_URL = 'static/'
 
 # Default primary key field type
@@ -146,4 +153,23 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
+
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
 }
+
+
+# If you're in development and React is running on localhost:3000
+CORS_ALLOWED_ORIGINS = [
+    # React
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+
+    # Vite
+    "http://localhost:5137",
+    "http://127.0.0.1:5137",
+]
+
+MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'

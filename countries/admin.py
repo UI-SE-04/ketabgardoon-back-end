@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from countries.models import Nationality
+from countries.models import Country
 
 # Register your models here.
-admin.site.register(Nationality)
+admin.site.register(Country)
