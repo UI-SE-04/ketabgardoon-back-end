@@ -1,51 +1,33 @@
-from rest_framework import serializers
+from rest_framework import viewsets, permissions, serializers
 from .models import Comment, UserCommentLike
-
-class CommentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Comment
-        fields = [
-            'id',
-            'user',
-            'book',
-            'comment_text',
-            'reply_to',
-            'created_at',
-            'updated_at',
-        ]
-        read_only_fields = ['id', 'user', 'created_at', 'updated_at']
-
-    def validate_reply_to(self, value):
-        """
-        Enforces that replies are only one level deep:
-            if `reply_to` is set, the parent comment must not itself be a reply.
-        """
-        if value is not None and value.reply_to is not None:
-            raise serializers.ValidationError(
-                "You may only reply to top-level comments (one level of replies allowed)."
-            )
-        return value
-
-    def create(self, validated_data):
-        request = self.context.get('request')
-        if request and hasattr(request, 'user'):
-            validated_data['user'] = request.user
-        return super().create(validated_data)
+from .serializers import CommentSerializer, UserCommentLikeSerializer
 
 
-class UserCommentLikeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserCommentLike
-        fields = [
-            'id',
-            'comment',
-            'user',
-            'created_at',
-        ]
-        read_only_fields = ['id', 'user', 'created_at']
+class CommentViewSet(viewsets.ModelViewSet):
+    """
+    Supports list, retrieve, create, update, and destroy.
+    """
+    queryset = Comment.objects.select_related('user', 'book', 'reply_to').all()
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-    def create(self, validated_data):
-        request = self.context.get('request')
-        if request and hasattr(request, 'user'):
-            validated_data['user'] = request.user
-        return super().create(validated_data)
+    def perform_create(self, serializer):
+        # Ensures the `user` field is set from the authenticated user
+        serializer.save(user=self.request.user)
+
+
+class UserCommentLikeViewSet(viewsets.ModelViewSet):
+    """
+    Users can like or unlike comments.
+    """
+    queryset = UserCommentLike.objects.select_related('user', 'comment').all()
+    serializer_class = UserCommentLikeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        # Prevent duplicate likes
+        comment = serializer.validated_data['comment']
+        user = self.request.user
+        if UserCommentLike.objects.filter(comment=comment, user=user).exists():
+            raise serializers.ValidationError("You have already liked this comment.")
+        serializer.save(user=user)
