@@ -1,37 +1,51 @@
-from rest_framework import viewsets, permissions, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
+from rest_framework import serializers
 from .models import Comment, UserCommentLike
-from .serializers import CommentSerializer, UserCommentLikeSerializer
 
-class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all().select_related('user', 'book', 'reply_to')
-    serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    filterset_fields = ['book', 'user']
-    search_fields = ['comment_text']
-    ordering_fields = ['created_at', 'updated_at']
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = [
+            'id',
+            'user',
+            'book',
+            'comment_text',
+            'reply_to',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'user', 'created_at', 'updated_at']
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    def validate_reply_to(self, value):
+        """
+        Enforces that replies are only one level deep:
+            if `reply_to` is set, the parent comment must not itself be a reply.
+        """
+        if value is not None and value.reply_to is not None:
+            raise serializers.ValidationError(
+                "You may only reply to top-level comments (one level of replies allowed)."
+            )
+        return value
 
-    @action(detail=True, methods=['get'])
-    def replies(self, request, pk=None):
-        comment = self.get_object()
-        replies = Comment.objects.filter(reply_to=comment)
-        page = self.paginate_queryset(replies)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(replies, many=True)
-        return Response(serializer.data)
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['user'] = request.user
+        return super().create(validated_data)
 
 
-class UserCommentLikeViewSet(viewsets.ModelViewSet):
-    queryset = UserCommentLike.objects.all().select_related('user', 'comment')
-    serializer_class = UserCommentLikeSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    filterset_fields = ['comment', 'user']
+class UserCommentLikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserCommentLike
+        fields = [
+            'id',
+            'comment',
+            'user',
+            'created_at',
+        ]
+        read_only_fields = ['id', 'user', 'created_at']
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['user'] = request.user
+        return super().create(validated_data)
