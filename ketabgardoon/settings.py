@@ -166,8 +166,13 @@ REST_FRAMEWORK = {
 
 # If you're in development and React is running on localhost:3000
 CORS_ALLOWED_ORIGINS = [
+    # React
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+
+    # Vite
+    "http://localhost:5137",
+    "http://127.0.0.1:5137",
 ]
 
 MEDIA_ROOT = BASE_DIR / 'media'
