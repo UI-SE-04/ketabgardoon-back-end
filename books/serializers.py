@@ -51,3 +51,11 @@ class BookSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'summary', 'publisher', 'published_date',
             'cover', 'created_at', 'updated_at', 'authors', 'categories', 'stores', 'isbns'
         ]
+
+
+class BookIdListSerializer(serializers.Serializer):
+    """
+    Example output:
+    {"book_ids": [1, 2, 3]}
+    """
+    book_ids = serializers.ListField(child=serializers.IntegerField())

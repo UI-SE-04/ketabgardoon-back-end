@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Author
+from books.models import Book
 
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,3 +11,5 @@ class AuthorSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at',
         ]
         read_only_fields = ['created_at', 'updated_at']
+
+
