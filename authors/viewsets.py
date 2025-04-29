@@ -1,13 +1,13 @@
-from rest_framework import viewsets, status
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from rest_framework import viewsets
+from rest_framework import generics
 
 from .models import Author
-from .serializers import AuthorSerializer
-
 from books.models import BookAuthor
-from books.serializers import BookIdListSerializer
 
+from .serializers import AuthorSerializer
+from .serializers import BookAuthorSerializer
+
+from rest_framework.pagination import PageNumberPagination
 
 
 class AuthorViewSet(viewsets.ModelViewSet):
@@ -21,13 +21,14 @@ class AuthorViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created_at', 'rating']
 
 
-class AuthorBooksView(APIView):
-    def get(self, request, author_id):
-        try:
-            book_ids = BookAuthor.objects.filter(author__id=author_id).values_list('book__id', flat=True)
-            serializer = BookIdListSerializer({"book_ids": list(book_ids)})
-            return Response(serializer.data)
-        except Author.DoesNotExist:
-            return Response({"error": "Author not found"}, status=status.HTTP_404_NOT_FOUND)
+class AuthorBooksView(generics.ListAPIView):
+    class EightItemPagination(PageNumberPagination):
+        page_size = 8
+        page_size_query_param = 'page_size'
+        max_page_size = 8
+    serializer_class = BookAuthorSerializer
+    pagination_class = EightItemPagination  # Or set default in settings.py
 
-
+    def get_queryset(self):
+        author_id = self.kwargs['author_id']
+        return BookAuthor.objects.filter(author__id=author_id).select_related('book', 'role')
