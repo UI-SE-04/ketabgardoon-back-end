@@ -1,5 +1,7 @@
+from django.urls import path
+
 from rest_framework.routers import DefaultRouter
-from authors.viewsets import AuthorViewSet
+from authors.viewsets import AuthorViewSet, AuthorBooksView
 from books.viewsets import PublisherViewSet, RoleViewSet, CategoryViewSet, StoreViewSet, BookAuthorViewSet, \
     BookISBNViewSet, BookStoreViewSet, BookViewSet
 from countries.viewsets import CountryViewSet
@@ -29,3 +31,7 @@ router.register(r'comments', CommentViewSet, basename='comment')
 router.register(r'comment-likes', UserCommentLikeViewSet, basename='commentlike')
 
 urlpatterns = router.urls
+
+urlpatterns += [
+    path('authors/<int:author_id>/books/', AuthorBooksView.as_view(), name='book-authors'),
+]

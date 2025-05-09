@@ -1,5 +1,7 @@
 from rest_framework import serializers
+
 from .models import Book, Publisher, Category, Store, Role, BookAuthor, BookISBN, BookStore
+
 class PublisherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Publisher
@@ -21,11 +23,14 @@ class RoleSerializer(serializers.ModelSerializer):
         fields = ['id', 'title']
 
 class BookAuthorSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField()
-    role = RoleSerializer()
+    author_id = serializers.IntegerField(source='author.id')
+    author_name = serializers.CharField(source='author.name')
+    author_photo = serializers.ImageField(source='author.author_photo')
+    author_role = serializers.CharField(source='role.title')
     class Meta:
         model = BookAuthor
-        fields = ['id', 'author', 'role', 'added_at']
+        fields = ['author_id', 'author_name', 'author_photo', 'author_role']
+
 
 class BookISBNSerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,7 +45,7 @@ class BookStoreSerializer(serializers.ModelSerializer):
 
 class BookSerializer(serializers.ModelSerializer):
     publisher = PublisherSerializer(read_only=True)
-    authors = BookAuthorSerializer(source='bookauthor_set', many=True, read_only=True)
+    authors = BookAuthorSerializer(source='bookauthor_set', many=True, read_only=True, )
     categories = CategorySerializer(many=True, read_only=True)
     stores = BookStoreSerializer(source='bookstore_set', many=True, read_only=True)
     isbns = BookISBNSerializer(source='bookisbn_set', many=True, read_only=True)
@@ -51,3 +56,11 @@ class BookSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'summary', 'publisher', 'published_date',
             'cover', 'created_at', 'updated_at', 'authors', 'categories', 'stores', 'isbns'
         ]
+
+
+class BookIdListSerializer(serializers.Serializer):
+    """
+    Example output:
+    {"book_ids": [1, 2, 3]}
+    """
+    book_ids = serializers.ListField(child=serializers.IntegerField())

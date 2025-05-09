@@ -9,6 +9,9 @@ class Publisher(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.name
+
 class Book(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
@@ -29,18 +32,34 @@ class Book(models.Model):
 class Role(models.Model):
     title = models.CharField(max_length=255)
 
+    def __str__(self):
+        return self.title
+
 class BookAuthor(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    role = models.ForeignKey('Role', on_delete=models.CASCADE)
+    role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
     added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['added_at']  # Orders by 'added_at' ascending by default
+
+    def __str__(self):
+        return f"{self.author.name} - {self.book.title}"
+
 
 class BookISBN(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     isbn = models.CharField(max_length=13, unique=True)
 
+    def __str__(self):
+        return self.isbn
+
 class Category(models.Model):
     title = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.title
 
 class Store(models.Model):
     name = models.CharField(max_length=255)
@@ -48,7 +67,13 @@ class Store(models.Model):
     phone = models.CharField(max_length=20, blank=True, null=True)
     logo = models.ImageField(upload_to='stores/', blank=True, null=True)
 
+    def __str__(self):
+        return self.name
+
 class BookStore(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     store = models.ForeignKey(Store, on_delete=models.CASCADE)
     url = models.URLField()
+
+    def __str__(self):
+        return f"{self.store.name} - {self.book.title}"
