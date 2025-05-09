@@ -1,5 +1,7 @@
 from rest_framework import serializers
+
 from .models import Book, Publisher, Category, Store, Role, BookAuthor, BookISBN, BookStore
+
 class PublisherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Publisher
@@ -25,7 +27,7 @@ class BookAuthorSerializer(serializers.ModelSerializer):
     role = RoleSerializer()
     class Meta:
         model = BookAuthor
-        fields = ['id', 'author', 'role', 'added_at']
+        fields = ['id', 'author', 'role', '']
 
 class BookISBNSerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,7 +42,7 @@ class BookStoreSerializer(serializers.ModelSerializer):
 
 class BookSerializer(serializers.ModelSerializer):
     publisher = PublisherSerializer(read_only=True)
-    authors = BookAuthorSerializer(source='bookauthor_set', many=True, read_only=True)
+    authors = BookAuthorSerializer(source='bookauthor_set', many=True, read_only=True, )
     categories = CategorySerializer(many=True, read_only=True)
     stores = BookStoreSerializer(source='bookstore_set', many=True, read_only=True)
     isbns = BookISBNSerializer(source='bookisbn_set', many=True, read_only=True)
