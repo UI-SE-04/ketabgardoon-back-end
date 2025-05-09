@@ -46,17 +46,11 @@ INSTALLED_APPS = [
     # for swagger
     'drf_yasg',
 
-
-    # user
     'custom_users',
-    # 'books',
-
-
-    'books',
-
     'countries',
+    'books',
     'authors',
-
+    'comments',
 ]
 
 MIDDLEWARE = [
@@ -158,7 +152,6 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
-
     ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
