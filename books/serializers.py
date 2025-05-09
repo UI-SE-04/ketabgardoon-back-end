@@ -23,11 +23,14 @@ class RoleSerializer(serializers.ModelSerializer):
         fields = ['id', 'title']
 
 class BookAuthorSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField()
-    role = RoleSerializer()
+    author_id = serializers.IntegerField(source='author.id')
+    author_name = serializers.CharField(source='author.name')
+    author_photo = serializers.ImageField(source='author.author_photo')
+    author_role = serializers.CharField(source='role.title')
     class Meta:
         model = BookAuthor
-        fields = ['id', 'author', 'role', '']
+        fields = ['author_id', 'author_name', 'author_photo', 'author_role']
+
 
 class BookISBNSerializer(serializers.ModelSerializer):
     class Meta:
