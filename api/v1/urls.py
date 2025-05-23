@@ -8,7 +8,7 @@ from countries.viewsets import CountryViewSet
 # custom user may need refactoring
 from custom_users.viewsets import UserViewSet
 from comments.viewsets import CommentViewSet, UserCommentLikeViewSet
-from lists.viewsets import ListIconViewSet
+from lists.viewsets import ListIconViewSet, ListViewSet
 
 # (register other app viewsets here)
 
@@ -32,6 +32,7 @@ router.register(r'comment-likes', UserCommentLikeViewSet, basename='comment-like
 router.register(r'comments', CommentViewSet, basename='comment')
 router.register(r'comment-likes', UserCommentLikeViewSet, basename='commentlike')
 
+router.register(r'lists', ListViewSet, basename='lists')
 router.register(r'lists/icons', ListIconViewSet, basename='list-icons')
 
 urlpatterns = router.urls
