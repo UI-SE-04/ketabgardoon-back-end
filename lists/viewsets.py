@@ -32,12 +32,17 @@ class ListViewSet(viewsets.ModelViewSet):
 
     queryset = List.objects.all().select_related('icon_id', 'user')
     serializer_class = ListSerializer
-    permission_classes = [IsAuthenticated, IsOwnerOrPublic]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrPublic]
 
     def get_queryset(self):
-        # show only public lists or your own
+        """
+        - Anonymous users: only public lists.
+        - Authenticated users: public lists plus their own.
+        """
         user = self.request.user
-        return List.objects.filter(Q(is_public=True) | Q(user=user))
+        if user.is_authenticated:
+            return List.objects.filter(Q(is_public=True) | Q(user=user))
+        return List.objects.filter(is_public=True)
 
     def perform_create(self, serializer):
         # bind new list to the logged-in user
