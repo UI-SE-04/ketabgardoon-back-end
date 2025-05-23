@@ -5,19 +5,19 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 
-from lists.models import ListIcon, List, BookList
+from lists.models import List, BookList
 
-from lists.serializers import ListIconSerializer, ListSerializer, BookInListSerializer, BookListCreateSerializer
+from lists.serializers import ListSerializer, BookInListSerializer, BookListCreateSerializer
 
 
-class ListIconViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    /lists/icons/ → list all available icons (id + URL)
-    Note: New icons can only be added by staff users via the Django admin panel. https://localhost:8000/admin/
-    """
-    queryset = ListIcon.objects.all()
-    serializer_class = ListIconSerializer
-    permission_classes = [permissions.AllowAny]
+# class ListIconViewSet(viewsets.ReadOnlyModelViewSet):
+#     """
+#     /lists/icons/ → list all available icons (id + URL)
+#     Note: New icons can only be added by staff users via the Django admin panel. https://localhost:8000/admin/
+#     """
+#     queryset = ListIcon.objects.all()
+#     serializer_class = ListIconSerializer
+#     permission_classes = [permissions.AllowAny]
 
 
 class IsOwnerOrPublic(permissions.BasePermission):
