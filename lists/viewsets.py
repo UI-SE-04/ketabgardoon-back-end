@@ -2,6 +2,7 @@ from django.db.models import Q
 
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 
@@ -31,7 +32,7 @@ class ListViewSet(viewsets.ModelViewSet):
 
     queryset = List.objects.all().select_related('icon_id', 'user')
     serializer_class = ListSerializer
-    permission_classes = [IsOwnerOrPublic]
+    permission_classes = [IsAuthenticated, IsOwnerOrPublic]
 
     def get_queryset(self):
         # show only public lists or your own
