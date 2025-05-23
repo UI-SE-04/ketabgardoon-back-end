@@ -1,6 +1,7 @@
 from django.db import Q
 
 from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
 
 from lists.models import ListIcon, List
 
@@ -29,7 +30,8 @@ class ListIconViewSet(viewsets.ReadOnlyModelViewSet):
 
 class ListViewSet(viewsets.ModelViewSet):
     """
-       /lists/            → list & create
+    /lists/            → list & create
+    /lists/{pk}/       → retrieve, update, destroy
     """
 
     queryset = List.objects.all().select_related('icon_id', 'user')
@@ -44,3 +46,17 @@ class ListViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # bind new list to the logged-in user
         serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=['get'], url_path=r'user/(?P<user_pk>\d+)')
+    def user_lists(self, request, user_pk=None):
+        """
+        GET /lists/user/{user_pk}/
+        → if you’re the same user: all your lists
+        → otherwise: only that user’s public lists
+        """
+        qs = List.objects.filter(user__pk=user_pk)
+        if request.user.pk != int(user_pk):
+            qs = qs.filter(is_public=True)
+        page = self.paginate_queryset(qs)
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
