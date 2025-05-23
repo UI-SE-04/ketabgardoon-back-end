@@ -9,6 +9,14 @@ from countries.viewsets import CountryViewSet
 from custom_users.viewsets import UserViewSet
 from comments.viewsets import CommentViewSet, UserCommentLikeViewSet
 from lists.viewsets import ListViewSet
+from lists.views import IconViewSet
+
+
+urlpatterns = [
+    path('authors/<int:author_id>/books/', AuthorBooksView.as_view(), name='book-authors'),
+    path('lists/icons/', IconViewSet.as_view(), name='icon-lists'),
+]
+
 
 # (register other app viewsets here)
 
@@ -32,11 +40,8 @@ router.register(r'comment-likes', UserCommentLikeViewSet, basename='comment-like
 router.register(r'comments', CommentViewSet, basename='comment')
 router.register(r'comment-likes', UserCommentLikeViewSet, basename='commentlike')
 
-# router.register(r'lists/icons', ListIconViewSet, basename='list-icons')
+
 router.register(r'lists', ListViewSet, basename='lists')
 
-urlpatterns = router.urls
+urlpatterns += router.urls
 
-urlpatterns += [
-    path('authors/<int:author_id>/books/', AuthorBooksView.as_view(), name='book-authors'),
-]
