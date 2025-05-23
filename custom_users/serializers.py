@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from lists.models import List
 from .models import CustomUser
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -23,4 +25,10 @@ class CustomUserSerializer(serializers.ModelSerializer):
             image=validated_data.get('image', None),
             bio=validated_data.get('bio', '')
         )
+        List.objects.create(name='خوانده شده', user=user, is_default=True)
+        List.objects.create(name='مورد علاقه', user=user, is_default=True)
+        List.objects.create(name='در حال خواندن', user=user, is_default=True)
+        List.objects.create(name='پیشنهادی', user=user, is_default=True, is_public=True)
         return user
+
+
