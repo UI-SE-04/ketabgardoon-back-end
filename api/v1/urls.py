@@ -5,9 +5,11 @@ from authors.viewsets import AuthorViewSet, AuthorBooksView
 from books.viewsets import PublisherViewSet, RoleViewSet, CategoryViewSet, StoreViewSet, BookAuthorViewSet, \
     BookISBNViewSet, BookStoreViewSet, BookViewSet
 from countries.viewsets import CountryViewSet
+# custom user may need refactoring
 from custom_users.viewsets import UserViewSet
-
 from comments.viewsets import CommentViewSet, UserCommentLikeViewSet
+from lists.viewsets import ListIconViewSet
+
 # (register other app viewsets here)
 
 router = DefaultRouter()
@@ -29,6 +31,8 @@ router.register(r'comment-likes', UserCommentLikeViewSet, basename='comment-like
 
 router.register(r'comments', CommentViewSet, basename='comment')
 router.register(r'comment-likes', UserCommentLikeViewSet, basename='commentlike')
+
+router.register(r'lists/icons', ListIconViewSet, basename='list-icons')
 
 urlpatterns = router.urls
 
