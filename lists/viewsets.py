@@ -10,16 +10,6 @@ from lists.models import List, BookList
 from lists.serializers import ListSerializer, BookInListSerializer, BookListCreateSerializer
 
 
-# class ListIconViewSet(viewsets.ReadOnlyModelViewSet):
-#     """
-#     /lists/icons/ → list all available icons (id + URL)
-#     Note: New icons can only be added by staff users via the Django admin panel. https://localhost:8000/admin/
-#     """
-#     queryset = ListIcon.objects.all()
-#     serializer_class = ListIconSerializer
-#     permission_classes = [permissions.AllowAny]
-
-
 class IsOwnerOrPublic(permissions.BasePermission):
     """
     - SAFE methods: allowed if list is public or if owner.
@@ -41,7 +31,7 @@ class ListViewSet(viewsets.ModelViewSet):
 
     queryset = List.objects.all().select_related('icon_id', 'user')
     serializer_class = ListSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrPublic]
+    permission_classes = [IsOwnerOrPublic]
 
     def get_queryset(self):
         # show only public lists or your own
