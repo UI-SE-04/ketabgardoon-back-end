@@ -1,11 +1,13 @@
 from django.db import Q
 
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 
-from lists.models import ListIcon, List
+from lists.models import ListIcon, List, BookList
 
-from lists.serializers import ListIconSerializer, ListSerializer
+from lists.serializers import ListIconSerializer, ListSerializer, BookInListSerializer, BookListCreateSerializer
 
 
 
@@ -32,6 +34,7 @@ class ListViewSet(viewsets.ModelViewSet):
     """
     /lists/            → list & create
     /lists/{pk}/       → retrieve, update, destroy
+    /lists/{pk}/books/ → list, add, remove books
     """
 
     queryset = List.objects.all().select_related('icon_id', 'user')
@@ -60,3 +63,62 @@ class ListViewSet(viewsets.ModelViewSet):
         page = self.paginate_queryset(qs)
         serializer = self.get_serializer(page, many=True)
         return self.get_paginated_response(serializer.data)
+
+    @action(detail=True, methods=['get', 'post', 'delete'], url_path='books')
+    def books(self, request, pk=None):
+        """
+        GET  /lists/{pk}/books/   → list books (public or owner)
+        POST /lists/{pk}/books/   → add a book (owner only)
+        DELETE /lists/{pk}/books/ → remove a book (owner only),
+                                     passing ?book_id=…
+        """
+        list_obj = self.get_object()
+        # LIST BOOKS
+        if request.method == 'GET':
+            # pagination with 8 items per page
+            paginator = PageNumberPagination()
+            paginator.page_size = 8
+            entries = BookList.objects.filter(list=list_obj).select_related('book')
+            page = paginator.paginate_queryset(entries, request)
+            serializer = BookInListSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        # WRITE OPS: require ownership
+        if list_obj.user != request.user:
+            return Response({'detail': 'Forbidden.'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        # ADD A BOOK
+        if request.method == 'POST':
+            ser = BookListCreateSerializer(
+                data=request.data,
+                context={'list_obj': list_obj}
+            )
+            ser.is_valid(raise_exception=True)
+            try:
+                entry = ser.save()
+            except Exception as e:
+                return Response(
+                    {'detail': 'Book already in list.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            out = BookInListSerializer(entry)
+            return Response(out.data, status=status.HTTP_201_CREATED)
+
+        # REMOVE A BOOK
+        if request.method == 'DELETE':
+            book_id = request.query_params.get('book_id')
+            if not book_id:
+                return Response(
+                    {'detail': 'book_id query parameter required.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            deleted, _ = BookList.objects.filter(
+                list=list_obj, book_id=book_id
+            ).delete()
+            if deleted:
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(
+                {'detail': 'Book not found in this list.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
