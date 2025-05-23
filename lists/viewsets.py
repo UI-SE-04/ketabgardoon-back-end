@@ -1,4 +1,4 @@
-from django.db import Q
+from django.db.models import Q
 
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
@@ -9,6 +9,15 @@ from lists.models import ListIcon, List, BookList
 
 from lists.serializers import ListIconSerializer, ListSerializer, BookInListSerializer, BookListCreateSerializer
 
+
+class ListIconViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    /lists/icons/ → list all available icons (id + URL)
+    Note: New icons can only be added by staff users via the Django admin panel. https://localhost:8000/admin/
+    """
+    queryset = ListIcon.objects.all()
+    serializer_class = ListIconSerializer
+    permission_classes = [permissions.AllowAny]
 
 
 class IsOwnerOrPublic(permissions.BasePermission):
@@ -22,19 +31,12 @@ class IsOwnerOrPublic(permissions.BasePermission):
         return obj.user == request.user
 
 
-
-class ListIconViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    /lists/icons/ → list all available icons (id + URL)
-    """
-    queryset = ListIcon.objects.all()
-    serializer_class = ListIconSerializer
-
 class ListViewSet(viewsets.ModelViewSet):
     """
     /lists/            → list & create
     /lists/{pk}/       → retrieve, update, destroy
     /lists/{pk}/books/ → list, add, remove books
+    /lists/user/{id}/  → lists of a given user
     """
 
     queryset = List.objects.all().select_related('icon_id', 'user')

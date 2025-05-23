@@ -32,8 +32,8 @@ router.register(r'comment-likes', UserCommentLikeViewSet, basename='comment-like
 router.register(r'comments', CommentViewSet, basename='comment')
 router.register(r'comment-likes', UserCommentLikeViewSet, basename='commentlike')
 
-router.register(r'lists', ListViewSet, basename='lists')
 router.register(r'lists/icons', ListIconViewSet, basename='list-icons')
+router.register(r'lists', ListViewSet, basename='lists')
 
 urlpatterns = router.urls
 
