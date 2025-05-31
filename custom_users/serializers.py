@@ -18,6 +18,7 @@ class EmailSubmissionSerializer(serializers.Serializer):
     def create(self, validated_data):
         email = validated_data['email']
         verification_code = ''.join(secrets.choice('0123456789') for _ in range(6))
+        expiry_time = timezone.now() + timedelta(minutes=10)  #expires after 10 mins
         # check if temporary user exists
         user, created = CustomUser.objects.get_or_create(
             email=email,
@@ -25,22 +26,23 @@ class EmailSubmissionSerializer(serializers.Serializer):
             defaults={
                 'username': f'temp_{email}_{timezone.now().timestamp()}',
                 'email_verification_code': verification_code,
+                'verification_code_expiry': expiry_time,
                 'is_email_verified': False
             }
         )
         if not created:
             # create code and save
             user.email_verification_code = verification_code
+            user.verification_code_expiry = expiry_time
             user.save()
 
         send_mail(
             subject='تأیید ایمیل',
-            message=f'کد تأیید شما: {verification_code}',
+            message=f'کد تأیید شما: {verification_code} \nاین کد تا 10 دقیقه معتبر است',
             from_email='???',
             recipient_list=[email],
             fail_silently=False,
         )
-
         return user
 
 class EmailVerificationSerializer(serializers.Serializer):
@@ -58,6 +60,8 @@ class EmailVerificationSerializer(serializers.Serializer):
             )
             if user.is_email_verified:
                 raise serializers.ValidationError("ایمیل قبلاً تأیید شده است.")
+            if user.verification_code_expiry < timezone.now():
+                raise serializers.ValidationError("کد تأیید منقضی شده است.")
         except CustomUser.DoesNotExist:
             raise serializers.ValidationError("ایمیل یا کد تأیید اشتباه است.")
 
