@@ -45,6 +45,26 @@ class EmailSubmissionSerializer(serializers.Serializer):
 
         return user
 
+class EmailVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    verification_code = serializers.CharField(max_length=6)
+    def validate(self, data):
+        email = data.get('email')
+        verification_code = data.get('verification_code')
+
+        try:
+            user = CustomUser.objects.get(
+                email=email,
+                email_verification_code=verification_code,
+                is_temporary=True
+            )
+            if user.is_email_verified:
+                raise serializers.ValidationError("ایمیل قبلاً تأیید شده است.")
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError("ایمیل یا کد تأیید اشتباه است.")
+
+        return data
+
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
