@@ -1,7 +1,49 @@
 from rest_framework import serializers
-
 from lists.models import List
 from .models import CustomUser
+import secrets
+from django.core.mail import send_mail
+from django.utils import timezone
+from datetime import timedelta
+
+
+class EmailSubmissionSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        if CustomUser.objects.filter(email=value, is_temporary=False).exists():
+            raise serializers.ValidationError("این ایمیل قبلاً ثبت شده است.")
+        return value
+
+    def create(self, validated_data):
+        email = validated_data['email']
+        verification_code = ''.join(secrets.choice('0123456789') for _ in range(6))
+
+        # check if temporary user exists
+        user, created = CustomUser.objects.get_or_create(
+            email=email,
+            is_temporary=True,
+            defaults={
+                'username': f'temp_{email}_{timezone.now().timestamp()}',
+                'email_verification_code': verification_code,
+                'is_email_verified': False
+            }
+        )
+
+        if not created:
+            # create code and save
+            user.email_verification_code = verification_code
+            user.save()
+
+        send_mail(
+            subject='تأیید ایمیل',
+            message=f'کد تأیید شما: {verification_code}',
+            from_email='???',
+            recipient_list=[email],
+            fail_silently=False,
+        )
+
+        return user
 
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
