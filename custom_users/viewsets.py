@@ -2,7 +2,7 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import CustomUser
-from .serializers import CustomUserSerializer, EmailSubmissionSerializer, EmailVerificationSerializer, CustomUserSerializer
+from .serializers import EmailSubmissionSerializer, EmailVerificationSerializer, CustomUserSerializer
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
