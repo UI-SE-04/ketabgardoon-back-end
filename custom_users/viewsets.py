@@ -31,3 +31,23 @@ class EmailVerificationView(APIView):
         if serializer.is_valid():
             return Response({"message": "verification code is valid", "email": serializer.validated_data['email']}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserCompletionView(APIView):
+    permission_classes = [permissions.AllowAny]
+    def post(self, request):
+        email = request.data.get('email')
+        try:
+            user = CustomUser.objects.get(email=email, is_temporary=True, is_email_verified=False)
+        except CustomUser.DoesNotExist:
+            return Response({"error": "temporary user not found or email is not verified of not exists"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = CustomUserSerializer(user, data=request.data)
+        if serializer.is_valid():
+            user = serializer.update(user, serializer.validated_data)
+            return Response({
+                "message": "sign up was successful",
+                "user": CustomUserSerializer(user).data
+            }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
