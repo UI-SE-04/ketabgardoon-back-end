@@ -24,3 +24,10 @@ class EmailSubmissionView(APIView):
             return Response({"message": "email is sent", "email": user.email}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class EmailVerificationView(APIView):
+    permission_classes = [permissions.AllowAny]
+    def post(self, request):
+        serializer = EmailVerificationSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response({"message": "verification code is valid", "email": serializer.validated_data['email']}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -12,7 +12,7 @@ class EmailSubmissionSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         if CustomUser.objects.filter(email=value, is_temporary=False).exists():
-            raise serializers.ValidationError("این ایمیل قبلاً ثبت شده است.")
+            raise serializers.ValidationError("email already exists")
         return value
 
     def create(self, validated_data):
@@ -59,11 +59,11 @@ class EmailVerificationSerializer(serializers.Serializer):
                 is_temporary=True
             )
             if user.is_email_verified:
-                raise serializers.ValidationError("ایمیل قبلاً تأیید شده است.")
+                raise serializers.ValidationError("email has already been verified.")
             if user.verification_code_expiry < timezone.now():
-                raise serializers.ValidationError("کد تأیید منقضی شده است.")
+                raise serializers.ValidationError("code is expired")
         except CustomUser.DoesNotExist:
-            raise serializers.ValidationError("ایمیل یا کد تأیید اشتباه است.")
+            raise serializers.ValidationError("wrong email or code")
 
         return data
 
@@ -79,7 +79,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         }
     def validate_username(self, value):
         if CustomUser.objects.filter(username=value, is_temporary=False).exists():
-            raise serializers.ValidationError("این نام کاربری قبلاً وجود دارد.")
+            raise serializers.ValidationError("this username is duplicated")
         return value
     def update(self, instance, validated_data):
         instance.username = validated_data['username']
