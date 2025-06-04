@@ -13,7 +13,7 @@ class AuthorSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_at', 'updated_at']
 
 
-class BookAuthorSerializer(serializers.ModelSerializer):
+class AuthorBookSerializer(serializers.ModelSerializer):
     book_id = serializers.IntegerField(source='book.id')
     book_title = serializers.CharField(source='book.title')
     book_cover = serializers.ImageField(source='book.cover')
