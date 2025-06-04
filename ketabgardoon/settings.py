@@ -175,3 +175,11 @@ CORS_ALLOWED_ORIGINS = [
 
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'sana13.computer@gmail.com'
+EMAIL_HOST_PASSWORD = 'byni hsuu sndv lfxq'
+DEFAULT_FROM_EMAIL = 'sana13.computer@gmail.com'
