@@ -38,9 +38,9 @@ class UserCompletionView(APIView):
     def post(self, request):
         email = request.data.get('email')
         try:
-            user = CustomUser.objects.get(email=email, is_temporary=True, is_email_verified=False)
+            user = CustomUser.objects.get(email=email)
         except CustomUser.DoesNotExist:
-            return Response({"error": "temporary user not found or email is not verified of not exists"},
+            return Response({"error": "temporary user not found or email is not verified or not exists"},
                             status=status.HTTP_400_BAD_REQUEST)
 
         serializer = CustomUserSerializer(user, data=request.data)

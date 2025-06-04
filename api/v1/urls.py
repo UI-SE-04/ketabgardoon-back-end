@@ -16,7 +16,7 @@ from lists.views import IconViewSet
 
 router = DefaultRouter()
 router.register(r'authors', AuthorViewSet, basename='author')
-router.register(r'countries', CountryViewSet, basename='nationality')
+#router.register(r'countries', CountryViewSet, basename='nationality')
 
 router.register(r'publishers', PublisherViewSet)
 router.register(r'roles', RoleViewSet)
@@ -28,7 +28,7 @@ router.register(r'book-stores', BookStoreViewSet)
 router.register(r'books', BookViewSet)
 
 router.register(r'nationalities', CountryViewSet, basename='nationality')
-router.register(r'comments', CommentViewSet, basename='comment')
+#router.register(r'comments', CommentViewSet, basename='comment')
 router.register(r'comment-likes', UserCommentLikeViewSet, basename='comment-like')
 
 router.register(r'comments', CommentViewSet, basename='comment')

@@ -38,7 +38,7 @@ class EmailSubmissionSerializer(serializers.Serializer):
 
         send_mail(
             subject='تأیید ایمیل',
-            message=f'کد تأیید شما: {verification_code} \nاین کد تا 10 دقیقه معتبر است',
+            message=f'کد تأیید شما: {verification_code} \nاین کد تا 10 دقیقه معتبر است\nکتابگردون ',
             from_email='???',
             recipient_list=[email],
             fail_silently=False,
@@ -83,7 +83,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return value
     def update(self, instance, validated_data):
         instance.username = validated_data['username']
-        instance.set_password(validated_data['password'])
+        instance.set_password(validated_data.get('password',''))
         instance.first_name = validated_data.get('first_name', '')
         instance.last_name = validated_data.get('last_name', '')
         instance.is_private = validated_data.get('is_private', False)
