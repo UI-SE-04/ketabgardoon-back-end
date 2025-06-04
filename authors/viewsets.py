@@ -5,7 +5,7 @@ from .models import Author
 from books.models import BookAuthor
 
 from .serializers import AuthorSerializer
-from .serializers import BookAuthorSerializer
+from .serializers import AuthorBookSerializer
 
 from rest_framework.pagination import PageNumberPagination
 
@@ -26,7 +26,7 @@ class AuthorBooksView(generics.ListAPIView):
         page_size = 8
         page_size_query_param = 'page_size'
         max_page_size = 8
-    serializer_class = BookAuthorSerializer
+    serializer_class = AuthorBookSerializer
     pagination_class = EightItemPagination  # Or set default in settings.py
 
     def get_queryset(self):
