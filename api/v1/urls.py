@@ -10,6 +10,7 @@ from custom_users.viewsets import UserViewSet, EmailSubmissionView, EmailVerific
 from comments.viewsets import CommentViewSet, UserCommentLikeViewSet
 from lists.viewsets import ListViewSet
 from lists.views import IconViewSet
+from rest_framework_simplejwt.views import TokenRefreshView
 
 
 # (register other app viewsets here)
@@ -51,5 +52,6 @@ urlpatterns += [
     path('complete-registration/', UserCompletionView.as_view(), name='complete-registration'),
 
     path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
 ]
