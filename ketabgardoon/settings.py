@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django_filters',
     'corsheaders',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt',
 
     # for swagger
     'drf_yasg',
@@ -158,6 +159,7 @@ REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ]
 }
 
@@ -184,6 +186,15 @@ EMAIL_HOST_USER = 'sana13.computer@gmail.com'
 EMAIL_HOST_PASSWORD = 'byni hsuu sndv lfxq'
 DEFAULT_FROM_EMAIL = 'sana13.computer@gmail.com'
 
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'UPDATE_LAST_LOGIN': True,
+}
 # Cache: for development, Django’s default locmem cache is fine.
 # In production, you might point this at Redis, Memcached, etc.
 CACHES = {
@@ -197,3 +208,4 @@ CACHES = {
 BOOK_VIEW_TTL = 24 * 60 * 60  # 86 400 seconds = 24 hours
 
 # (If you eventually install Redis, you can just change CACHES["default"])
+
