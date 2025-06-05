@@ -2,7 +2,9 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import CustomUser
-from .serializers import EmailSubmissionSerializer, EmailVerificationSerializer, CustomUserSerializer
+from .serializers import EmailSubmissionSerializer, EmailVerificationSerializer, CustomUserSerializer,CustomTokenObtainPairSerializer
+from rest_framework import status, permissions
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
@@ -51,3 +53,7 @@ class UserCompletionView(APIView):
                 "user": CustomUserSerializer(user).data
             }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+    permission_classes = [permissions.AllowAny]
