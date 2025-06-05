@@ -24,6 +24,7 @@ class Book(models.Model):
     authors = models.ManyToManyField(Author, through='BookAuthor')
     categories = models.ManyToManyField('Category')
     stores = models.ManyToManyField('Store', through='BookStore')
+    view_count = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.title

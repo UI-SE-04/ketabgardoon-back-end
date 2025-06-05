@@ -195,3 +195,17 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': False,
     'UPDATE_LAST_LOGIN': True,
 }
+# Cache: for development, Django’s default locmem cache is fine.
+# In production, you might point this at Redis, Memcached, etc.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-books-view-counter",
+    }
+}
+
+# How long (in seconds) we keep the "visitor has viewed this book today" key.
+BOOK_VIEW_TTL = 24 * 60 * 60  # 86 400 seconds = 24 hours
+
+# (If you eventually install Redis, you can just change CACHES["default"])
+
