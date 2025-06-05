@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django_filters',
     'corsheaders',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt',
 
     # for swagger
     'drf_yasg',
@@ -158,6 +159,7 @@ REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ]
 }
 
@@ -183,3 +185,13 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'sana13.computer@gmail.com'
 EMAIL_HOST_PASSWORD = 'byni hsuu sndv lfxq'
 DEFAULT_FROM_EMAIL = 'sana13.computer@gmail.com'
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'UPDATE_LAST_LOGIN': True,
+}
