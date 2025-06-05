@@ -112,11 +112,11 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         if username and password:
             user = authenticate(request=self.context.get('request'), username=username, password=password)
             if not user:
-                raise serializers.ValidationError("نام کاربری یا رمز عبور اشتباه است.")
+                raise serializers.ValidationError("wrong username or password")
             if not user.is_email_verified:
-                raise serializers.ValidationError("ایمیل شما تأیید نشده است.")
+                raise serializers.ValidationError("your email is not verified")
             if user.is_temporary:
-                raise serializers.ValidationError("حساب موقت نمی‌تواند وارد شود.")
+                raise serializers.ValidationError("temporary account can't login")
 
         data = super().validate(attrs)
         refresh = self.get_token(self.user)
