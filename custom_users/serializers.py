@@ -5,7 +5,8 @@ import secrets
 from django.core.mail import send_mail
 from django.utils import timezone
 from datetime import timedelta
-
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import authenticate
 
 class EmailSubmissionSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -102,3 +103,28 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return instance
 
 
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = 'username'  # main feature
+    def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+
+        if username and password:
+            user = authenticate(request=self.context.get('request'), username=username, password=password)
+            if not user:
+                raise serializers.ValidationError("نام کاربری یا رمز عبور اشتباه است.")
+            if not user.is_email_verified:
+                raise serializers.ValidationError("ایمیل شما تأیید نشده است.")
+            if user.is_temporary:
+                raise serializers.ValidationError("حساب موقت نمی‌تواند وارد شود.")
+
+        data = super().validate(attrs)
+        refresh = self.get_token(self.user)
+        data['refresh'] = str(refresh)
+        data['access'] = str(refresh.access_token)
+        data['user'] = {
+            'id': self.user.id,
+            'username': self.user.username,
+            'email': self.user.email,
+        }
+        return data
