@@ -2,6 +2,7 @@ from rest_framework import serializers
 from lists.models import List
 from .models import CustomUser
 import secrets
+from django.contrib.auth.password_validation import validate_password
 from django.core.mail import send_mail
 from django.utils import timezone
 from datetime import timedelta
@@ -76,11 +77,18 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'is_private', 'image', 'bio', 'password'
         )
         extra_kwargs = {
-            'password': {'write_only': True}
+            'password': {'write_only': True, 'required': False},
+            'email': {'read_only': True},
+            'id': {'read_only': True}
         }
     def validate_username(self, value):
-        if CustomUser.objects.filter(username=value, is_temporary=False).exists():
+        user = self.context['request'].user
+        if CustomUser.objects.filter(username=value, is_temporary=False).exclude(id=user.id).exists():
             raise serializers.ValidationError("this username is duplicated")
+        return value
+    def validate_password(self, value):
+        if value:
+            validate_password(value)
         return value
     def update(self, instance, validated_data):
         instance.username = validated_data['username']
@@ -90,16 +98,19 @@ class CustomUserSerializer(serializers.ModelSerializer):
         instance.is_private = validated_data.get('is_private', False)
         instance.image = validated_data.get('image', None)
         instance.bio = validated_data.get('bio', '')
-        instance.is_temporary = False
-        instance.is_email_verified = True
-        instance.email_verification_code = None
-        instance.verification_code_expiry = None
+        # update password for signup or when is needed
+        if 'password' in validated_data and validated_data['password']:
+            instance.set_password(validated_data['password'])
+            if instance.is_temporary:
+                instance.is_temporary = False
+                instance.is_email_verified = True
+                instance.email_verification_code = None
+                instance.verification_code_expiry = None
+                List.objects.create(name='خوانده شده', user=instance, is_default=True)
+                List.objects.create(name='مورد علاقه', user=instance, is_default=True)
+                List.objects.create(name='در حال خواندن', user=instance, is_default=True)
+                List.objects.create(name='پیشنهادی', user=instance, is_default=True, is_public=True)
         instance.save()
-
-        List.objects.create(name='خوانده شده', user=instance, is_default=True)
-        List.objects.create(name='مورد علاقه', user=instance, is_default=True)
-        List.objects.create(name='در حال خواندن', user=instance, is_default=True)
-        List.objects.create(name='پیشنهادی', user=instance, is_default=True, is_public=True)
         return instance
 
 
