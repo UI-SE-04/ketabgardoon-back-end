@@ -6,7 +6,8 @@ from books.viewsets import PublisherViewSet, RoleViewSet, CategoryViewSet, Store
     BookISBNViewSet, BookStoreViewSet, BookViewSet
 from countries.viewsets import CountryViewSet
 # custom user may need refactoring
-from custom_users.viewsets import UserViewSet, EmailSubmissionView, EmailVerificationView, UserCompletionView,CustomTokenObtainPairView
+from custom_users.viewsets import UserViewSet, EmailSubmissionView, EmailVerificationView, UserCompletionView, \
+    CustomTokenObtainPairView, ChangePasswordView
 from comments.viewsets import CommentViewSet, UserCommentLikeViewSet
 from lists.viewsets import ListViewSet
 from lists.views import IconViewSet
@@ -51,5 +52,7 @@ urlpatterns += [
     path('complete-registration/', UserCompletionView.as_view(), name='complete-registration'),
 
     path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+
+    path('change-password/', ChangePasswordView.as_view(), name='change-password'),
 
 ]
