@@ -69,7 +69,7 @@ class UserCompletionView(APIView):
             user = serializer.update(user, serializer.validated_data)
             return Response({
                 "message": "sign up was successful",
-                "user": CustomUserSerializer(user).data
+                "user": CustomUserSerializer(user, context={'request': request}).data
             }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

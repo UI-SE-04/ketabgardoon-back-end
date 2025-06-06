@@ -82,9 +82,22 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'id': {'read_only': True}
         }
     def validate_username(self, value):
-        user = self.context['request'].user
-        if CustomUser.objects.filter(username=value, is_temporary=False).exclude(id=user.id).exists():
-            raise serializers.ValidationError("this username is duplicated")
+        # safe request
+        request = self.context.get('request')
+        user = getattr(request, 'user', None) if request else None
+
+        # user is authenticated
+        if user and user.is_authenticated:
+            # user name not changed
+            if user.username == value:
+                return value
+            # check duplication of new user name
+            if CustomUser.objects.filter(username=value, is_temporary=False).exclude(id=user.id).exists():
+                raise serializers.ValidationError("duplicate username")
+        else:
+            # for sign up
+            if CustomUser.objects.filter(username=value, is_temporary=False).exists():
+                raise serializers.ValidationError("duplicate username")
         return value
     def validate_password(self, value):
         if value:
@@ -92,7 +105,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return value
     def update(self, instance, validated_data):
         instance.username = validated_data['username']
-        instance.set_password(validated_data.get('password',''))
         instance.first_name = validated_data.get('first_name', '')
         instance.last_name = validated_data.get('last_name', '')
         instance.is_private = validated_data.get('is_private', False)
