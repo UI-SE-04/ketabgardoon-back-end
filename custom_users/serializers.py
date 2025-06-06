@@ -2,6 +2,7 @@ from rest_framework import serializers
 from lists.models import List
 from .models import CustomUser
 import secrets
+from django.contrib.auth.password_validation import validate_password
 from django.core.mail import send_mail
 from django.utils import timezone
 from datetime import timedelta
@@ -76,30 +77,52 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'is_private', 'image', 'bio', 'password'
         )
         extra_kwargs = {
-            'password': {'write_only': True}
+            'password': {'write_only': True, 'required': False},
+            'email': {'read_only': True},
+            'id': {'read_only': True}
         }
     def validate_username(self, value):
-        if CustomUser.objects.filter(username=value, is_temporary=False).exists():
-            raise serializers.ValidationError("this username is duplicated")
+        # safe request
+        request = self.context.get('request')
+        user = getattr(request, 'user', None) if request else None
+
+        # user is authenticated
+        if user and user.is_authenticated:
+            # user name not changed
+            if user.username == value:
+                return value
+            # check duplication of new user name
+            if CustomUser.objects.filter(username=value, is_temporary=False).exclude(id=user.id).exists():
+                raise serializers.ValidationError("duplicate username")
+        else:
+            # for sign up
+            if CustomUser.objects.filter(username=value, is_temporary=False).exists():
+                raise serializers.ValidationError("duplicate username")
+        return value
+    def validate_password(self, value):
+        if value:
+            validate_password(value)
         return value
     def update(self, instance, validated_data):
         instance.username = validated_data['username']
-        instance.set_password(validated_data.get('password',''))
         instance.first_name = validated_data.get('first_name', '')
         instance.last_name = validated_data.get('last_name', '')
         instance.is_private = validated_data.get('is_private', False)
         instance.image = validated_data.get('image', None)
         instance.bio = validated_data.get('bio', '')
-        instance.is_temporary = False
-        instance.is_email_verified = True
-        instance.email_verification_code = None
-        instance.verification_code_expiry = None
+        # update password for signup or when is needed
+        if 'password' in validated_data and validated_data['password']:
+            instance.set_password(validated_data['password'])
+            if instance.is_temporary:
+                instance.is_temporary = False
+                instance.is_email_verified = True
+                instance.email_verification_code = None
+                instance.verification_code_expiry = None
+                List.objects.create(name='خوانده شده', user=instance, is_default=True)
+                List.objects.create(name='مورد علاقه', user=instance, is_default=True)
+                List.objects.create(name='در حال خواندن', user=instance, is_default=True)
+                List.objects.create(name='پیشنهادی', user=instance, is_default=True, is_public=True)
         instance.save()
-
-        List.objects.create(name='خوانده شده', user=instance, is_default=True)
-        List.objects.create(name='مورد علاقه', user=instance, is_default=True)
-        List.objects.create(name='در حال خواندن', user=instance, is_default=True)
-        List.objects.create(name='پیشنهادی', user=instance, is_default=True, is_public=True)
         return instance
 
 
@@ -128,3 +151,23 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'email': self.user.email,
         }
         return data
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True)
+
+    def validate_old_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError("wrong password")
+        return value
+
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value
+
+    def save(self):
+        user = self.context['request'].user
+        user.set_password(self.validated_data['new_password'])
+        user.save()
+        return user
