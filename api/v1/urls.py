@@ -7,7 +7,7 @@ from books.viewsets import PublisherViewSet, RoleViewSet, CategoryViewSet, Store
 from countries.viewsets import CountryViewSet
 # custom user may need refactoring
 from custom_users.viewsets import UserViewSet, EmailSubmissionView, EmailVerificationView, UserCompletionView, \
-    CustomTokenObtainPairView, ChangePasswordView
+    CustomTokenObtainPairView, ChangePasswordView, PasswordResetRequestView, PasswordResetConfirmView
 from comments.viewsets import CommentViewSet, UserCommentLikeViewSet
 from lists.viewsets import ListViewSet
 from lists.views import IconViewSet
@@ -56,5 +56,8 @@ urlpatterns += [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),
+
+    path('password-reset/request/', PasswordResetRequestView.as_view(), name='password-reset-request'),
+    path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
 
 ]

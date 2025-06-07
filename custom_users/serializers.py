@@ -171,3 +171,67 @@ class ChangePasswordSerializer(serializers.Serializer):
         user.set_password(self.validated_data['new_password'])
         user.save()
         return user
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        try:
+            user = CustomUser.objects.get(email=value, is_temporary=False)
+            if not user.is_email_verified:
+                raise serializers.ValidationError("email is not verified")
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError("email does not exist")
+        return value
+
+    def save(self):
+        email = self.validated_data['email']
+        user = CustomUser.objects.get(email=email)
+        verification_code = ''.join(secrets.choice('0123456789') for _ in range(6))
+        expiry_time = timezone.now() + timedelta(minutes=10)
+
+        user.email_verification_code = verification_code
+        user.verification_code_expiry = expiry_time
+        user.save()
+
+        send_mail(
+            subject='بازیابی رمز عبور',
+            message=f'کد بازیابی رمز عبور شما: {verification_code}\nاین کد تا 10 دقیقه معتبر است.\nکتابگردون',
+            from_email='???',
+            recipient_list=[email],
+            fail_silently=False,
+        )
+        return user
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    verification_code = serializers.CharField(max_length=6)
+    new_password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        email = data.get('email')
+        verification_code = data.get('verification_code')
+
+        try:
+            user = CustomUser.objects.get(
+                email=email,
+                email_verification_code=verification_code,
+                is_temporary=False
+            )
+            if user.verification_code_expiry < timezone.now():
+                raise serializers.ValidationError("code is expired")
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError("wrong code or email")
+
+        validate_password(data['new_password'])
+        return data
+
+    def save(self):
+        email = self.validated_data['email']
+        new_password = self.validated_data['new_password']
+        user = CustomUser.objects.get(email=email)
+        user.set_password(new_password)
+        user.email_verification_code = None
+        user.verification_code_expiry = None
+        user.save()
+        return user
