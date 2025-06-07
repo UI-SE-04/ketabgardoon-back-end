@@ -171,3 +171,34 @@ class ChangePasswordSerializer(serializers.Serializer):
         user.set_password(self.validated_data['new_password'])
         user.save()
         return user
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        try:
+            user = CustomUser.objects.get(email=value, is_temporary=False)
+            if not user.is_email_verified:
+                raise serializers.ValidationError("email is not verified")
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError("email does not exist")
+        return value
+
+    def save(self):
+        email = self.validated_data['email']
+        user = CustomUser.objects.get(email=email)
+        verification_code = ''.join(secrets.choice('0123456789') for _ in range(6))
+        expiry_time = timezone.now() + timedelta(minutes=10)
+
+        user.email_verification_code = verification_code
+        user.verification_code_expiry = expiry_time
+        user.save()
+
+        send_mail(
+            subject='بازیابی رمز عبور',
+            message=f'کد بازیابی رمز عبور شما: {verification_code}\nاین کد تا 10 دقیقه معتبر است.\nکتابگردون',
+            from_email='???',
+            recipient_list=[email],
+            fail_silently=False,
+        )
+        return user
