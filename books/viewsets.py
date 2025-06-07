@@ -165,16 +165,16 @@ class BookViewSet(viewsets.ModelViewSet):
 class RatingsViewSet(viewsets.ReadOnlyModelViewSet):
     """
     /books/ratings/    GET list all ratings of the current user
-                       GET <pk>/  retrieve a single rating by its id
     """
     serializer_class = RatingSerializer
     permission_classes = [permissions.IsAuthenticated]
-    lookup_field = 'pk'
     pagination_class = ItemPagination
 
     def get_queryset(self):
-        # Only ratings of the logged-in user
-        return Rating.objects.filter(user=self.request.user)
+        if self.request.user.is_authenticated:
+            return Rating.objects.filter(user=self.request.user)
+        else:
+            return Response(data={'details':'not authorized'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class MyRatingViewSet(viewsets.ViewSet):

@@ -33,6 +33,7 @@ router.register(r'stores', StoreViewSet)
 router.register(r'book-authors', BookAuthorViewSet)
 router.register(r'book-isbns', BookISBNViewSet)
 router.register(r'book-stores', BookStoreViewSet)
+router.register(r'books/ratings', RatingsViewSet, basename='user-book-ratings')
 router.register(r'books', BookViewSet)
 
 #router.register(r'comments', CommentViewSet, basename='comment')
@@ -46,8 +47,21 @@ router.register(r'lists', ListViewSet, basename='lists')
 
 router.register(r'users', UserViewSet, basename='user')
 
-router.register(r'books/ratings', RatingsViewSet, basename='user-book-ratings')
+
+
 urlpatterns = router.urls
+
+
+
+# Wire up the custom nested /books/{book_id}/myrating/ endpoints
+myrating = MyRatingViewSet.as_view({
+    'get':    'retrieve',
+    'post':   'create',
+    'put':    'update',
+    'patch':  'update',
+    'delete': 'destroy',
+})
+
 
 urlpatterns += [
     path('authors/<int:author_id>/books/', AuthorBooksView.as_view(), name='book-authors'),
@@ -61,6 +75,6 @@ urlpatterns += [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),
-    path('books/<int:pk>/myrating', MyRatingViewSet.as_view(), name='my-rating'),
+    path('books/<int:pk>/myrating', myrating, name='my-rating'),
 
 ]
