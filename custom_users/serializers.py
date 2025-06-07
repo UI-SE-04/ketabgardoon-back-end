@@ -202,3 +202,36 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             fail_silently=False,
         )
         return user
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    verification_code = serializers.CharField(max_length=6)
+    new_password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        email = data.get('email')
+        verification_code = data.get('verification_code')
+
+        try:
+            user = CustomUser.objects.get(
+                email=email,
+                email_verification_code=verification_code,
+                is_temporary=False
+            )
+            if user.verification_code_expiry < timezone.now():
+                raise serializers.ValidationError("code is expired")
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError("wrong code or email")
+
+        validate_password(data['new_password'])
+        return data
+
+    def save(self):
+        email = self.validated_data['email']
+        new_password = self.validated_data['new_password']
+        user = CustomUser.objects.get(email=email)
+        user.set_password(new_password)
+        user.email_verification_code = None
+        user.verification_code_expiry = None
+        user.save()
+        return user
