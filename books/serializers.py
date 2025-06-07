@@ -50,12 +50,15 @@ class BookSerializer(serializers.ModelSerializer):
     stores = BookStoreSerializer(source='bookstore_set', many=True, read_only=True)
     isbns = BookISBNSerializer(source='bookisbn_set', many=True, read_only=True)
 
+    ratings_count = serializers.IntegerField(read_only=True)
+    ratings_avg = serializers.FloatField(read_only=True)
+
     class Meta:
         model = Book
         fields = [
             'id', 'title', 'description', 'summary', 'publisher', 'published_date',
             'cover', 'created_at', 'updated_at', 'authors', 'categories', 'stores',
-            'isbns', 'view_count',
+            'isbns', 'view_count', 'ratings_count', 'ratings_avg'
         ]
         read_only_fileds = ['id', 'view_count', 'updated_at', 'created_at']
 
