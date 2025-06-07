@@ -3,7 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import CustomUser
-from .serializers import EmailSubmissionSerializer, EmailVerificationSerializer, CustomUserSerializer,CustomTokenObtainPairSerializer,ChangePasswordSerializer
+from .serializers import EmailSubmissionSerializer, EmailVerificationSerializer, CustomUserSerializer, \
+    CustomTokenObtainPairSerializer, ChangePasswordSerializer, PasswordResetRequestSerializer
 from rest_framework import status, permissions
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -85,4 +86,13 @@ class ChangePasswordView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "successfully changed"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PasswordResetRequestView(APIView):
+    permission_classes = [permissions.AllowAny]
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "new pass is sent"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
