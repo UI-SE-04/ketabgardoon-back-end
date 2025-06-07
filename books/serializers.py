@@ -1,6 +1,10 @@
 from rest_framework import serializers
 
-from .models import Book, Publisher, Category, Store, Role, BookAuthor, BookISBN, BookStore
+from .models import (Book, Publisher, Category, Store,
+                     Role, BookAuthor, BookISBN, BookStore,
+                     Rating,
+                     )
+
 
 class PublisherSerializer(serializers.ModelSerializer):
     class Meta:
@@ -69,3 +73,10 @@ class BookIdListSerializer(serializers.Serializer):
     {"book_ids": [1, 2, 3]}
     """
     book_ids = serializers.ListField(child=serializers.IntegerField())
+
+
+class RatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rating
+        fields = ['id', 'book', 'user', 'rating', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
