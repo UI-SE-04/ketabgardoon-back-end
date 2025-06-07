@@ -1,82 +1,77 @@
 from django.db.models import Q
 
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 
+from django_filters.rest_framework import DjangoFilterBackend
+
 from lists.models import List, BookList
-
+from lists.permissions import IsOwnerOrPublic
 from lists.serializers import ListSerializer, BookInListSerializer, BookListCreateSerializer
-
-
-class IsOwnerOrPublic(permissions.BasePermission):
-    """
-    - SAFE methods: allowed if list is public or if owner.
-    - UNSAFE methods: allowed for owner only.
-    """
-    def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return obj.is_public or obj.user == request.user
-        return obj.user == request.user
+from lists.filters import ListFilter
 
 
 class ListViewSet(viewsets.ModelViewSet):
     """
-    /lists/            → list & create
-    /lists/{pk}/       → retrieve, update, destroy
+    /lists/       → list & create
+    /lists/{pk}/  → retrieve, update, destroy
     /lists/{pk}/books/ → list, add, remove books
-    /lists/user/{id}/  → lists of a given user
     """
 
-    queryset = List.objects.all().select_related('icon_id', 'user')
+    queryset = List.objects.all().select_related('user')
     serializer_class = ListSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrPublic]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_class = ListFilter
+    search_fields = ['name', 'description']
 
     def get_queryset(self):
         """
-        - Anonymous users: only public lists.
-        - Authenticated users: public lists plus their own.
+        Anonymous users: only public lists.
+        Authenticated users: public lists + their own.
+        Then apply any filter parameters.
         """
+        base_qs = List.objects.all().select_related('user')
         user = self.request.user
-        if user.is_authenticated:
-            return List.objects.filter(Q(is_public=True) | Q(user=user))
-        return List.objects.filter(is_public=True)
+
+        if not user.is_authenticated:
+            base_qs = base_qs.filter(is_public=True)
+        else:
+            # include both public and own, unless "mine" was specified which overrides
+            base_qs = base_qs.filter(Q(is_public=True) | Q(user=user))
+
+        return base_qs
 
     def perform_create(self, serializer):
-        # bind new list to the logged-in user
+        # Bind new list to the logged‐in user.
         serializer.save(user=self.request.user)
 
-    @action(detail=False, methods=['get'], url_path=r'user/(?P<user_pk>\d+)')
-    def user_lists(self, request, user_pk=None):
-        """
-        GET /lists/user/{user_pk}/
-        → if you’re the same user: all your lists
-        → otherwise: only that user’s public lists
-        """
-        qs = List.objects.filter(user__pk=user_pk)
-        if request.user.pk != int(user_pk):
-            qs = qs.filter(is_public=True)
-        page = self.paginate_queryset(qs)
-        serializer = self.get_serializer(page, many=True)
-        return self.get_paginated_response(serializer.data)
-
-    @action(detail=True, methods=['get', 'post', 'delete'], url_path='books')
+    @action(
+        detail=True,
+        methods=['get', 'post', 'delete'],
+        url_path='books',
+        permission_classes=[IsAuthenticatedOrReadOnly, IsOwnerOrPublic],
+    )
     def books(self, request, pk=None):
         """
-        GET  /lists/{pk}/books/   → list books (public or owner)
-        POST /lists/{pk}/books/   → add a book (owner only)
-        DELETE /lists/{pk}/books/ → remove a book (owner only),
-                                     passing ?book_id=…
+        GET    /lists/{pk}/books/   → list books (public or owner)
+        POST   /lists/{pk}/books/   → add a book (owner only)
+        DELETE /lists/{pk}/books/?book_id=… → remove a book (owner only)
         """
         list_obj = self.get_object()
+
         # LIST BOOKS
         if request.method == 'GET':
-            # pagination with 8 items per page
             paginator = PageNumberPagination()
             paginator.page_size = 8
-            entries = BookList.objects.filter(list=list_obj).select_related('book')
+            entries = (
+                BookList.objects
+                .filter(list=list_obj)
+                .select_related('book')
+            )
             page = paginator.paginate_queryset(entries, request)
             serializer = BookInListSerializer(page, many=True)
             return paginator.get_paginated_response(serializer.data)
@@ -95,7 +90,7 @@ class ListViewSet(viewsets.ModelViewSet):
             ser.is_valid(raise_exception=True)
             try:
                 entry = ser.save()
-            except Exception as e:
+            except Exception:
                 return Response(
                     {'detail': 'Book already in list.'},
                     status=status.HTTP_400_BAD_REQUEST
@@ -104,19 +99,18 @@ class ListViewSet(viewsets.ModelViewSet):
             return Response(out.data, status=status.HTTP_201_CREATED)
 
         # REMOVE A BOOK
-        if request.method == 'DELETE':
-            book_id = request.query_params.get('book_id')
-            if not book_id:
-                return Response(
-                    {'detail': 'book_id query parameter required.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            deleted, _ = BookList.objects.filter(
-                list=list_obj, book_id=book_id
-            ).delete()
-            if deleted:
-                return Response(status=status.HTTP_204_NO_CONTENT)
+        book_id = request.query_params.get('book_id')
+        if not book_id:
             return Response(
-                {'detail': 'Book not found in this list.'},
-                status=status.HTTP_404_NOT_FOUND
+                {'detail': 'book_id query parameter required.'},
+                status=status.HTTP_400_BAD_REQUEST
             )
+        deleted, _ = BookList.objects.filter(
+            list=list_obj, book_id=book_id
+        ).delete()
+        if deleted:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'detail': 'Book not found in this list.'},
+            status=status.HTTP_404_NOT_FOUND
+        )
