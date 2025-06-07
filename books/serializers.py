@@ -1,6 +1,10 @@
 from rest_framework import serializers
 
-from .models import Book, Publisher, Category, Store, Role, BookAuthor, BookISBN, BookStore
+from .models import (Book, Publisher, Category, Store,
+                     Role, BookAuthor, BookISBN, BookStore,
+                     Rating,
+                     )
+
 
 class PublisherSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,14 +54,17 @@ class BookSerializer(serializers.ModelSerializer):
     stores = BookStoreSerializer(source='bookstore_set', many=True, read_only=True)
     isbns = BookISBNSerializer(source='bookisbn_set', many=True, read_only=True)
 
+    ratings_count = serializers.IntegerField(read_only=True)
+    ratings_avg = serializers.FloatField(read_only=True)
+
     class Meta:
         model = Book
         fields = [
             'id', 'title', 'description', 'summary', 'publisher', 'published_date',
             'cover', 'created_at', 'updated_at', 'authors', 'categories', 'stores',
-            'isbns', 'view_count',
+            'isbns', 'view_count', 'ratings_count', 'ratings_avg'
         ]
-        read_only_fileds = ['id', 'view_count', 'updated_at', 'created_at']
+        read_only_fields = ['id', 'view_count', 'updated_at', 'created_at']
 
 
 class BookIdListSerializer(serializers.Serializer):
@@ -66,3 +73,10 @@ class BookIdListSerializer(serializers.Serializer):
     {"book_ids": [1, 2, 3]}
     """
     book_ids = serializers.ListField(child=serializers.IntegerField())
+
+
+class RatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rating
+        fields = ['id', 'book', 'user', 'rating', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
