@@ -3,14 +3,19 @@ from .models import Author
 from books.models import BookAuthor
 
 class AuthorSerializer(serializers.ModelSerializer):
+    total_ratings = serializers.IntegerField()
+    average_rating = serializers.FloatField()
+
     class Meta:
         model = Author
         fields = [
             'id', 'name', 'birth_date', 'death_date',
             'nationality', 'bio', 'author_photo', 'call_info',
-            'created_at', 'updated_at',
+            'created_at', 'updated_at', 'total_ratings',
+            'average_rating',
         ]
-        read_only_fields = ['created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at', 'total_ratings',
+            'average_rating',]
 
 
 class AuthorBookSerializer(serializers.ModelSerializer):
