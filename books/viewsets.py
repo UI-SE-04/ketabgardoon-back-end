@@ -1,11 +1,13 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, filters
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+
+from django.db.models import F, Avg, Count
+
 from .models import Book, Publisher, Category, Store, Role, BookAuthor, BookStore
 from .serializers import BookSerializer, PublisherSerializer, CategorySerializer, StoreSerializer, RoleSerializer, \
     BookAuthorSerializer, BookISBN, BookISBNSerializer, BookStoreSerializer
 from .utils import has_viewed_today, mark_viewed_today
-from django.db.models import F
 
 
 class PublisherViewSet(viewsets.ModelViewSet):
@@ -74,21 +76,55 @@ class BookStoreViewSet(viewsets.ModelViewSet):
     ordering_fields = ['store__name']
 
 
+
+
+class BookPagination(PageNumberPagination):
+    """
+    Simple pagination for BookViewSet
+    """
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
 class BookViewSet(viewsets.ModelViewSet):
     """
-    list, retrieve, create, update, partial_update, destroy
+    list:    Returns a paginated list of books with optional search/ordering and rating stats
+    retrieve: Returns a single book, increments view count once per visitor per day, includes rating stats
+    create, update, partial_update, destroy: Standard CRUD operations
     """
     queryset = Book.objects.all().order_by('created_at')
     serializer_class = BookSerializer
-    filterset_fields = ['publisher__id', 'published_date']
-    search_fields = ['title', 'published_date','category__title']
-    ordering_fields = ['published_date']
     permission_classes = [permissions.AllowAny]
+    pagination_class = BookPagination
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['title', 'summary', 'description', 'authors__name', 'categories__title']
+    ordering_fields = ['created_at', 'ratings_count', 'ratings_avg', 'view_count']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        # Annotate with rating statistics
+        return (
+            Book.objects
+            .annotate(ratings_count=Count('rating', distinct=True))
+            .annotate(ratings_avg=Avg('rating__rating'))
+            .order_by(*self.ordering)
+        )
+
+    def list(self, request, *args, **kwargs):
+        # Use annotated queryset and built-in pagination
+        return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
-        book = get_object_or_404(Book, pk=kwargs['pk'])
-        book_id = book.pk
+        # Fetch and annotate single book
+        book = (
+            self.get_queryset()
+            .filter(pk=kwargs['pk'])
+            .first()
+        )
+        if not book:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+        # Track view count per visitor per day
         if request.user.is_authenticated:
             visitor_id = f'user:{request.user.id}'
         else:
@@ -96,9 +132,12 @@ class BookViewSet(viewsets.ModelViewSet):
                 request.session.save()
             visitor_id = f'session:{request.session.session_key}'
 
-        if not has_viewed_today(visitor_id, book_id):
-            mark_viewed_today(visitor_id, book_id)
-            Book.objects.filter(pk=book_id).update(view_count=F('view_count') + 1)
-            book.refresh_from_db(fields=["view_count"])
+        if not has_viewed_today(visitor_id, book.pk):
+            mark_viewed_today(visitor_id, book.pk)
+            # Use F expression for atomic increment
+            Book.objects.filter(pk=book.pk).update(view_count=F('view_count') + 1)
+            # Refresh annotated view_count field
+            book.view_count = Book.objects.get(pk=book.pk).view_count
+
         serializer = self.get_serializer(book)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
