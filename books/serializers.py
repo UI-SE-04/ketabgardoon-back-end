@@ -64,7 +64,7 @@ class BookSerializer(serializers.ModelSerializer):
             'cover', 'created_at', 'updated_at', 'authors', 'categories', 'stores',
             'isbns', 'view_count', 'ratings_count', 'ratings_avg'
         ]
-        read_only_fields = ['id', 'view_count', 'updated_at', 'created_at']
+        read_only_fields = ['id', 'view_count', 'ratings_count', 'ratings_avg', 'updated_at', 'created_at']
 
 
 class BookIdListSerializer(serializers.Serializer):

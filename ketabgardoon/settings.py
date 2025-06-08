@@ -205,7 +205,7 @@ CACHES = {
 }
 
 # How long (in seconds) we keep the "visitor has viewed this book today" key.
-BOOK_VIEW_TTL = 24 * 60 * 60  # 86 400 seconds = 24 hours
+DEFAULT_VIEW_TTL = 24 * 60 * 60  # 86 400 seconds = 24 hours
 
 # (If you eventually install Redis, you can just change CACHES["default"])
 

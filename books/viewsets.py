@@ -16,7 +16,7 @@ from .serializers import (
     BookISBN, BookISBNSerializer, BookStoreSerializer,
     RatingSerializer
 )
-from .utils import has_viewed_today, mark_viewed_today
+from utils.view_cache import has_viewed_today, mark_viewed_today
 
 
 class PublisherViewSet(viewsets.ModelViewSet):
@@ -175,8 +175,10 @@ class BookViewSet(viewsets.ModelViewSet):
             visitor_id = f'session:{request.session.session_key}'
 
         # Increment view_count atomically, once per visitor per day
-        if not has_viewed_today(visitor_id, book.pk):
-            mark_viewed_today(visitor_id, book.pk)
+        if not has_viewed_today(visitor_identifier=visitor_id,
+                                object_type='Book', object_id= book.pk):
+            mark_viewed_today(visitor_identifier=visitor_id,
+                                object_type='Book', object_id= book.pk)
             Book.objects.filter(pk=book.pk).update(view_count=F('view_count') + 1)
             # Refresh the in-memory object
             book.view_count = Book.objects.get(pk=book.pk).view_count
