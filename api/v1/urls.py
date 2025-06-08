@@ -15,9 +15,39 @@ from comments.viewsets import CommentViewSet, UserCommentLikeViewSet
 from lists.viewsets import ListViewSet
 from lists.views import IconViewSet
 
-
-
 from rest_framework_simplejwt.views import TokenRefreshView
+
+
+# Wire up the custom nested /books/{book_id}/myrating/ endpoints
+myrating = MyRatingViewSet.as_view({
+    'get':    'retrieve',
+    'post':   'create',
+    'put':    'update',
+    'patch':  'update',
+    'delete': 'destroy',
+})
+
+
+urlpatterns = [
+    path('authors/<int:author_id>/books/', AuthorBooksView.as_view(), name='book-authors'),
+    path('lists/icons/', IconViewSet.as_view(), name='icon-lists'),
+
+    path('submit-email/', EmailSubmissionView.as_view(), name='submit-email'),
+    path('verify-email/', EmailVerificationView.as_view(), name='verify-email'),
+    path('complete-registration/', UserCompletionView.as_view(), name='complete-registration'),
+
+    path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    path('change-password/', ChangePasswordView.as_view(), name='change-password'),
+    path('books/<int:pk>/myrating', myrating, name='my-rating'),
+
+    path('password-reset/request/', PasswordResetRequestView.as_view(), name='password-reset-request'),
+    path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+
+]
+
+
 
 
 # (register other app viewsets here)
@@ -49,35 +79,4 @@ router.register(r'users', UserViewSet, basename='user')
 
 
 
-urlpatterns = router.urls
-
-
-
-# Wire up the custom nested /books/{book_id}/myrating/ endpoints
-myrating = MyRatingViewSet.as_view({
-    'get':    'retrieve',
-    'post':   'create',
-    'put':    'update',
-    'patch':  'update',
-    'delete': 'destroy',
-})
-
-
-urlpatterns += [
-    path('authors/<int:author_id>/books/', AuthorBooksView.as_view(), name='book-authors'),
-    path('lists/icons/', IconViewSet.as_view(), name='icon-lists'),
-
-    path('submit-email/', EmailSubmissionView.as_view(), name='submit-email'),
-    path('verify-email/', EmailVerificationView.as_view(), name='verify-email'),
-    path('complete-registration/', UserCompletionView.as_view(), name='complete-registration'),
-
-    path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-
-    path('change-password/', ChangePasswordView.as_view(), name='change-password'),
-    path('books/<int:pk>/myrating', myrating, name='my-rating'),
-
-    path('password-reset/request/', PasswordResetRequestView.as_view(), name='password-reset-request'),
-    path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
-
-]
+urlpatterns += router.urls
