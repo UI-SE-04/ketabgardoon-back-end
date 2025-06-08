@@ -107,43 +107,66 @@ class ItemPagination(PageNumberPagination):
 
 class BookViewSet(viewsets.ModelViewSet):
     """
-    list:    Returns a paginated list of books with optional search/ordering and rating stats
+    list:    Returns a paginated list of books with optional search and custom sorting
     retrieve: Returns a single book, increments view count once per visitor per day, includes rating stats
     create, update, partial_update, destroy: Standard CRUD operations
     """
-    queryset = Book.objects.all().order_by('created_at')
     serializer_class = BookSerializer
     permission_classes = [permissions.AllowAny]
     pagination_class = ItemPagination
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+
+    # We no longer use DRF's OrderingFilter; sorting is handled in get_queryset
+    filter_backends = [filters.SearchFilter]
     search_fields = ['title', 'summary', 'description', 'authors__name', 'categories__title']
-    ordering_fields = ['created_at', 'ratings_count', 'ratings_avg', 'view_count']
-    ordering = ['-created_at']
+
+    # Default ordering if no ?sort= is provided
+    default_ordering = ['-created_at']
 
     def get_queryset(self):
-        # Annotate with rating statistics
-        return (
-            Book.objects
-            .annotate(ratings_count=Count('rating', distinct=True))
-            .annotate(ratings_avg=Avg('rating__rating'))
-            .order_by(*self.ordering)
+        """
+        Annotate with ratings_count and ratings_avg, then apply custom sort based on `?sort=`.
+        Supported values:
+          - sort=view            → view_count
+          - sort=-view           → -view_count
+          - sort=rating          → ratings_avg
+          - sort=-rating         → -ratings_avg
+          - sort=rating_count    → ratings_count
+          - sort=-rating_count   → -ratings_count
+        """
+        qs = Book.objects.annotate(
+            ratings_count=Count('rating', distinct=True),
+            ratings_avg=Avg('rating__rating'),
         )
 
+        sort_map = {
+            'view': 'view_count',
+            'rating': 'ratings_avg',
+            'rating_count': 'ratings_count',
+        }
+
+        sort_param = self.request.GET.get('sort')
+        if sort_param:
+            descending = sort_param.startswith('-')
+            key = sort_param.lstrip('-')
+            if key in sort_map:
+                field = sort_map[key]
+                prefix = '' if descending else '-'
+                return qs.order_by(f'{prefix}{field}')
+
+        # fallback to default
+        return qs.order_by(*self.default_ordering)
+
     def list(self, request, *args, **kwargs):
-        # Use annotated queryset and built-in pagination
+        # list uses the annotated & sorted queryset
         return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
         # Fetch and annotate single book
-        book = (
-            self.get_queryset()
-            .filter(pk=kwargs['pk'])
-            .first()
-        )
+        book = self.get_queryset().filter(pk=kwargs['pk']).first()
         if not book:
             return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Track view count per visitor per day
+        # Determine visitor identifier
         if request.user.is_authenticated:
             visitor_id = f'user:{request.user.id}'
         else:
@@ -151,11 +174,11 @@ class BookViewSet(viewsets.ModelViewSet):
                 request.session.save()
             visitor_id = f'session:{request.session.session_key}'
 
+        # Increment view_count atomically, once per visitor per day
         if not has_viewed_today(visitor_id, book.pk):
             mark_viewed_today(visitor_id, book.pk)
-            # Use F expression for atomic increment
             Book.objects.filter(pk=book.pk).update(view_count=F('view_count') + 1)
-            # Refresh annotated view_count field
+            # Refresh the in-memory object
             book.view_count = Book.objects.get(pk=book.pk).view_count
 
         serializer = self.get_serializer(book)
