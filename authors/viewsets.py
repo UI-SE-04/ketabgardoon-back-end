@@ -1,4 +1,4 @@
-from rest_framework import viewsets, generics, status
+from rest_framework import viewsets, generics, status, filters
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -24,25 +24,54 @@ class ItemPagination(PageNumberPagination):
 
 class AuthorViewSet(viewsets.ModelViewSet):
     """
-    list, retrieve, create, update, partial_update, destroy
+    list:    Returns a paginated list of authors with optional search and custom sorting
+    retrieve: Returns a single author, increments view count once per visitor per day, includes rating stats
+    create, update, partial_update, destroy: Standard CRUD operations
     """
-    # Always annotate authors with rating stats for list/retrieve
-    queryset = Author.objects.annotate(
-        total_ratings = Count('book__rating'),
-        average_rating = Avg('book__rating__rating'),
-    )
     serializer_class = AuthorSerializer
     pagination_class = ItemPagination
-    filterset_fields = ['nationality__country_code']
-    search_fields = ['name', 'bio']
-    ordering_fields = ['created_at', 'rating']
 
-    @action(detail=False, methods=['get'])
-    def get(self, request):
-        # Re‐use the same queryset annotations for the summary
-        authors = self.get_queryset()
-        serializer = AuthorSerializer(authors, many=True)
-        return Response(serializer.data)
+    # Keep SearchFilter for ?search=
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'bio']
+    filterset_fields = ['nationality__country_code']
+
+    # Default ordering if no ?sort= is provided
+    default_ordering = ['-created_at']
+
+    def get_queryset(self):
+        """
+        Annotate with total_ratings and average_rating, then apply custom sort based on `?sort=`.
+        Supported values:
+          - sort=view            → view_count
+          - sort=-view           → -view_count
+          - sort=rating          → average_rating
+          - sort=-rating         → -average_rating
+          - sort=rating_count    → total_ratings
+          - sort=-rating_count   → -total_ratings
+        """
+        qs = Author.objects.annotate(
+            total_ratings=Count('book__rating', distinct=True),
+            average_rating=Avg('book__rating__rating'),
+        )
+
+        sort_map = {
+            'view': 'view_count',
+            'rating': 'average_rating',
+            'rating_count': 'total_ratings',
+        }
+
+        sort_param = self.request.GET.get('sort')
+        if sort_param:
+            descending = sort_param.startswith('-')
+            key = sort_param.lstrip('-')
+            if key in sort_map:
+                field = sort_map[key]
+                prefix = '' if descending else '-'
+                return qs.order_by(f'{prefix}{field}')
+
+        # Fallback to default ordering
+        return qs.order_by(*self.default_ordering)
 
     def retrieve(self, request, *args, **kwargs):
         """
@@ -63,7 +92,7 @@ class AuthorViewSet(viewsets.ModelViewSet):
 
         # Increment view_count only once per day per visitor
         if not has_viewed_today(visitor_id, 'Author', author.pk):
-            mark_viewed_today(visitor_id, 'Author' ,author.pk)
+            mark_viewed_today(visitor_id, 'Author', author.pk)
             Author.objects.filter(pk=author.pk).update(view_count=F('view_count') + 1)
             # Refresh in-memory object to reflect updated count
             author.view_count = Author.objects.get(pk=author.pk).view_count
@@ -71,6 +100,12 @@ class AuthorViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(author)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['get'])
+    def get(self, request):
+        # Re‐use the same queryset (with sort + annotations) for the summary
+        authors = self.get_queryset()
+        serializer = AuthorSerializer(authors, many=True)
+        return Response(serializer.data)
 
 class AuthorBooksView(generics.ListAPIView):
     serializer_class = AuthorBookSerializer
