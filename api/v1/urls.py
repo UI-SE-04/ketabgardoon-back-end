@@ -64,7 +64,7 @@ router.register(r'book-authors', BookAuthorViewSet)
 router.register(r'book-isbns', BookISBNViewSet)
 router.register(r'book-stores', BookStoreViewSet)
 router.register(r'books/ratings', RatingsViewSet, basename='user-book-ratings')
-router.register(r'books', BookViewSet)
+router.register(r'books', BookViewSet, basename='books')
 
 #router.register(r'comments', CommentViewSet, basename='comment')
 router.register(r'comment-likes', UserCommentLikeViewSet, basename='comment-like')
