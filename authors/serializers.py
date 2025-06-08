@@ -12,10 +12,10 @@ class AuthorSerializer(serializers.ModelSerializer):
             'id', 'name', 'birth_date', 'death_date',
             'nationality', 'bio', 'author_photo', 'call_info',
             'created_at', 'updated_at', 'total_ratings',
-            'average_rating',
+            'average_rating', 'view_count'
         ]
         read_only_fields = ['created_at', 'updated_at', 'total_ratings',
-            'average_rating',]
+            'average_rating', 'view_count', ]
 
 
 class AuthorBookSerializer(serializers.ModelSerializer):

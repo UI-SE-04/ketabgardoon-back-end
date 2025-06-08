@@ -1,15 +1,16 @@
-from rest_framework import viewsets, generics
+from rest_framework import viewsets, generics, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
-from django.db.models import Avg, Count
+from django.db.models import Avg, Count, F
 
 
 from .models import Author
 from books.models import BookAuthor
 from .serializers import AuthorSerializer
 from .serializers import AuthorBookSerializer
+from utils.view_cache import mark_viewed_today, has_viewed_today
 
 
 class ItemPagination(PageNumberPagination):
@@ -41,6 +42,33 @@ class AuthorViewSet(viewsets.ModelViewSet):
         # Re‐use the same queryset annotations for the summary
         authors = self.get_queryset()
         serializer = AuthorSerializer(authors, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        Retrieve a single author instance. Increment view count per unique visitor per day.
+        """
+        # Fetch the annotated author object
+        author = self.get_queryset().filter(pk=kwargs['pk']).first()
+        if not author:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Determine unique visitor identifier
+        if request.user.is_authenticated:
+            visitor_id = f'user:{request.user.id}'
+        else:
+            if not request.session.session_key:
+                request.session.save()
+            visitor_id = f'session:{request.session.session_key}'
+
+        # Increment view_count only once per day per visitor
+        if not has_viewed_today(visitor_id, 'Author', author.pk):
+            mark_viewed_today(visitor_id, 'Author' ,author.pk)
+            Author.objects.filter(pk=author.pk).update(view_count=F('view_count') + 1)
+            # Refresh in-memory object to reflect updated count
+            author.view_count = Author.objects.get(pk=author.pk).view_count
+
+        serializer = self.get_serializer(author)
         return Response(serializer.data)
 
 
