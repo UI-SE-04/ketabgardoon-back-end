@@ -66,7 +66,7 @@ class ListViewSet(viewsets.ModelViewSet):
         # LIST BOOKS
         if request.method == 'GET':
             paginator = PageNumberPagination()
-            paginator.page_size = 8
+            paginator.page_size = 100
             entries = (
                 BookList.objects
                 .filter(list=list_obj)
