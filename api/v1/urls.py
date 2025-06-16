@@ -70,8 +70,6 @@ router.register(r'books', BookViewSet, basename='books')
 router.register(r'comment-likes', UserCommentLikeViewSet, basename='comment-like')
 
 router.register(r'comments', CommentViewSet, basename='comment')
-router.register(r'comment-likes', UserCommentLikeViewSet, basename='commentlike')
-
 
 router.register(r'lists', ListViewSet, basename='lists')
 
