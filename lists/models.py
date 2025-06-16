@@ -10,7 +10,7 @@ class List(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="lists")
     is_default = models.BooleanField(default=False)
     is_public = models.BooleanField(default=False)
-    icon_filename = models.CharField(max_length=100, help_text="Filename from /media/lists/icons/", default='default.png')
+    icon = models.CharField(max_length=100, help_text="Filename from /media/lists/icons/", default='default.png')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -18,7 +18,7 @@ class List(models.Model):
 
     def get_icon_url(self):
         from django.conf import settings
-        return f"{settings.MEDIA_URL}lists/icons/{self.icon_filename}"
+        return f"{settings.MEDIA_URL}lists/icons/{self.icon}"
 
     class Meta:
         constraints = [

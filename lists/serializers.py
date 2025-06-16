@@ -12,10 +12,10 @@ class ListSerializer(serializers.ModelSerializer):
      - makes `user`, `is_default` and `created_at` read-only
     """
     user = serializers.IntegerField(source='user.id', read_only=True)
-
+    icon = serializers.SerializerMethodField()
     class Meta:
         model = List
-        fields = ['id', 'name', 'user', 'is_default', 'is_public', 'icon_filename', 'created_at']
+        fields = ['id', 'name', 'user', 'is_default', 'is_public', 'icon', 'created_at']
         read_only_fields = ['id', 'user', 'is_default', 'created_at']
 
     def get_icon(self, obj):
@@ -34,6 +34,7 @@ class BookInListSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookList
         fields = ['book_id', 'book_title', 'book_cover', 'added_at']
+
 
 
 class BookListCreateSerializer(serializers.ModelSerializer):
