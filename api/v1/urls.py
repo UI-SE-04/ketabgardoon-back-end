@@ -12,7 +12,7 @@ from comments.viewsets import CommentViewSet, UserCommentLikeViewSet
 from lists.viewsets import ListViewSet
 from lists.views import IconViewSet
 from rest_framework_simplejwt.views import TokenRefreshView
-
+from readingGoal.views import ReadingTargetView
 
 # (register other app viewsets here)
 
@@ -59,5 +59,7 @@ urlpatterns += [
 
     path('password-reset/request/', PasswordResetRequestView.as_view(), name='password-reset-request'),
     path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+
+    path('reading-target/', ReadingTargetView.as_view(), name='reading-target'),
 
 ]

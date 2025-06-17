@@ -8,7 +8,7 @@ from jalali_date import date2jalali
 
 class ReadingTarget(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    year = jmodels.jDateField(default=date2jalali(timezone.now()).year)
+    year = models.PositiveIntegerField(default=date2jalali(timezone.now()).year)
     target_books = models.PositiveIntegerField(default=0 )
     read_books = models.PositiveIntegerField(default=0 )
     created_at = models.DateTimeField(auto_now_add=True)
