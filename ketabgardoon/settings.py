@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'authors',
     'comments',
     'lists',
+    'search',
 
 ]
 
