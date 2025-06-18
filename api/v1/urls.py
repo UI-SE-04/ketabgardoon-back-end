@@ -13,6 +13,7 @@ from lists.viewsets import ListViewSet
 from lists.views import IconViewSet
 from rest_framework_simplejwt.views import TokenRefreshView
 
+from search.views import CategorySearchView, SearchView
 
 # (register other app viewsets here)
 
@@ -59,5 +60,8 @@ urlpatterns += [
 
     path('password-reset/request/', PasswordResetRequestView.as_view(), name='password-reset-request'),
     path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+
+    path('category-search/', CategorySearchView.as_view(), name='category_search'),
+    path('search/', SearchView.as_view(), name='search'),
 
 ]
