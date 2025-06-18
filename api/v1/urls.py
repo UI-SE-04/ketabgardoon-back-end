@@ -16,7 +16,7 @@ from lists.viewsets import ListViewSet
 from lists.views import IconViewSet
 
 from rest_framework_simplejwt.views import TokenRefreshView
-
+from readingGoal.views import ReadingTargetView
 
 # Wire up the custom nested /books/{book_id}/myrating/ endpoints
 myrating = MyRatingViewSet.as_view({
@@ -44,6 +44,8 @@ urlpatterns = [
 
     path('password-reset/request/', PasswordResetRequestView.as_view(), name='password-reset-request'),
     path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+
+    path('reading-target/', ReadingTargetView.as_view(), name='reading-target'),
 
 ]
 
