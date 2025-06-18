@@ -6,7 +6,7 @@ from django.db.models import Q
 import re
 from books.models import Book, Author, Category,BookISBN
 from custom_users.models import CustomUser
-from .serializers import BookSerializer, AuthorSerializer, UserSerializer
+from .serializers import BookSerializer, AuthorSerializer, UserSerializer,CategorySerializer
 
 class SearchPagination(pagination.PageNumberPagination):
     page_size = 10
@@ -62,7 +62,7 @@ class SearchView(APIView):
             user_serializer = UserSerializer(user_results, many=True)
             results['users'] = user_serializer.data
 
-            # Search categories (genres) and add their books to the books list
+            # Search categories and add their books to the books list
             category_results = Category.objects.filter(
                 Q(title__icontains=query)
             ).distinct()
@@ -71,13 +71,35 @@ class SearchView(APIView):
                     categories__in=category_results
                 ).distinct().prefetch_related('authors', 'categories')
                 category_book_serializer = BookSerializer(category_books, many=True)
-                # Merge category books with existing books, avoiding duplicates
+                # avoiding duplicates
                 existing_book_ids = {book['id'] for book in results['books']}
                 results['books'].extend(
                     [book for book in category_book_serializer.data if book['id'] not in existing_book_ids]
                 )
 
-        # Apply pagination to the entire results dictionary
+        # Apply pagination
         paginator = self.pagination_class()
         paginated_results = paginator.paginate_queryset([results], request)
         return paginator.get_paginated_response(paginated_results[0])
+
+
+class CategorySearchView(APIView):
+    pagination_class = SearchPagination
+
+    def get(self, request):
+        query = request.query_params.get('q', '').strip()
+        if not query:
+            return Response(
+                {'error': 'Query parameter is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        category_results = Category.objects.filter(
+            Q(title__icontains=query)
+        ).distinct().prefetch_related('book_set__authors')
+
+        paginator = self.pagination_class()
+        paginated_categories = paginator.paginate_queryset(category_results, request)
+
+        serializer = CategorySerializer(paginated_categories, many=True)
+        return paginator.get_paginated_response(serializer.data)
