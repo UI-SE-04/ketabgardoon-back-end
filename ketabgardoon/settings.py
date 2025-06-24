@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
-
+    'jalali_date',
     # for swagger
     'drf_yasg',
 
@@ -53,7 +53,11 @@ INSTALLED_APPS = [
     'authors',
     'comments',
     'lists',
+ 
+    'search',
+ 
     "readingGoal.apps.ReadinggoalConfig"
+ 
 
 ]
 

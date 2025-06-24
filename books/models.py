@@ -53,7 +53,7 @@ class BookAuthor(models.Model):
 
 class BookISBN(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
-    isbn = models.CharField(max_length=13, unique=True)
+    isbn = models.CharField(max_length=17, unique=True)
 
     def __str__(self):
         return self.isbn
