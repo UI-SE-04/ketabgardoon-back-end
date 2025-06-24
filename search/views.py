@@ -25,7 +25,7 @@ class SearchView(APIView):
             )
 
         # ISBN regex pattern for 10 or 13 digits (with optional hyphens)
-        isbn_pattern = r'^(?:\d{10}|\d{13}|\d{1,5}-\d{1,7}-\d{1,7}-\d{1})$'
+        isbn_pattern = r'^(?=(?:[^0-9]*[0-9]){10}(?:(?:[^0-9]*[0-9]){3})?$)[\\d-]+$'
         results = {
             'books': [],
             'authors': [],
