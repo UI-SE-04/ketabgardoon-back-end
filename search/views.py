@@ -25,7 +25,7 @@ class SearchView(APIView):
             )
 
         # ISBN regex pattern for 10 or 13 digits (with optional hyphens)
-        isbn_pattern = r'^(?=(?:[^0-9]*[0-9]){10}(?:(?:[^0-9]*[0-9]){3})?$)[\\d-]+$'
+        isbn_pattern = r'^(?:\d{10}|\d{13}|[\d-]{10,17})$'
         results = {
             'books': [],
             'authors': [],
@@ -33,8 +33,11 @@ class SearchView(APIView):
         }
 
         if re.match(isbn_pattern, query):
-            # Search by ISBN
-            isbn_results = BookISBN.objects.filter(isbn=query.replace('-', '')).select_related('book')
+            # Search by ISBN (support both with and without hyphens)
+            cleaned_isbn = query.replace('-', '')
+            isbn_results = BookISBN.objects.filter(
+                isbn__in=[query, cleaned_isbn]
+            ).select_related('book')
             books = [isbn.book for isbn in isbn_results]
             book_serializer = BookSerializer(books, many=True)
             results['books'] = book_serializer.data
