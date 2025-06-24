@@ -1,5 +1,6 @@
 from django.contrib import admin
-from books.models import Book , Publisher,BookAuthor,Role,BookISBN,Category,Store,BookStore
+from books.models import Book, Publisher, BookAuthor, Role, BookISBN, Category, Store, BookStore, Rating
+
 # Register your models here.
 
 
@@ -21,4 +22,12 @@ admin.site.register(Store)
 admin.site.register(Role)
 admin.site.register(BookAuthor)
 admin.site.register(BookISBN)
+ 
 admin.site.register(BookStore)
+ 
+admin.site.register(Category)
+admin.site.register(Store)
+admin.site.register(BookStore)
+admin.site.register(Rating)
+
+ 

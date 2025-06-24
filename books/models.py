@@ -1,5 +1,7 @@
 from django.db import models
 from authors.models import Author
+from custom_users.models import CustomUser
+
 
 class Publisher(models.Model):
     name = models.CharField(max_length=255)
@@ -78,3 +80,11 @@ class BookStore(models.Model):
 
     def __str__(self):
         return f"{self.store.name} - {self.book.title}"
+
+
+class Rating(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    rating = models.FloatField(default=None)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
