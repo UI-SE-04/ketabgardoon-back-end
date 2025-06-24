@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
-
+    'jalali_date',
     # for swagger
     'drf_yasg',
 
