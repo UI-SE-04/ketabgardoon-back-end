@@ -24,10 +24,7 @@ admin.site.register(BookAuthor)
 admin.site.register(BookISBN)
  
 admin.site.register(BookStore)
- 
-admin.site.register(Category)
-admin.site.register(Store)
-admin.site.register(BookStore)
+
 admin.site.register(Rating)
 
  
