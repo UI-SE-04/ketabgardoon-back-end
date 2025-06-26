@@ -58,7 +58,7 @@ class ListViewSet(viewsets.ModelViewSet):
         methods=['get', 'post', 'delete'],
         url_path='books',
         serializer_class=BookListCreateSerializer,
-        permission_classes=[IsAuthenticated],
+        permission_classes=[IsOwnerOrPublic],
     )
     def books(self, request, pk: int = None):
         """
