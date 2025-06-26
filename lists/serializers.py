@@ -41,10 +41,13 @@ class BookInListSerializer(serializers.ModelSerializer):
     book_title = serializers.CharField(source='book.title', read_only=True)
     book_cover = serializers.ImageField(source='book.cover', read_only=True)
     added_at = serializers.DateTimeField(read_only=True)
-
+    authors = serializers.SerializerMethodField()
     class Meta:
         model = BookList
-        fields = ['book_id', 'book_title', 'book_cover', 'added_at']
+        fields = ['book_id', 'book_title', 'book_cover', 'authors', 'added_at']
+
+    def get_authors(self, obj):
+        return [ author.name for author in obj.book.authors.all() ]
 
 
 
@@ -54,10 +57,10 @@ class BookListCreateSerializer(serializers.ModelSerializer):
     Only needs the book ID; the list is supplied by the view.
     """
     book_id = serializers.IntegerField(write_only=True)
-
+    authors = serializers.SerializerMethodField()
     class Meta:
         model = BookList
-        fields = ['book_id']
+        fields = ['book_id', 'authors']
 
     def validate_book_id(self, value):
         """
@@ -76,3 +79,6 @@ class BookListCreateSerializer(serializers.ModelSerializer):
             list=list_obj,
             book_id=validated_data['book_id']
         )
+
+    def get_authors(self, obj):
+        return [ author.name for author in obj.book.authors.all() ]
