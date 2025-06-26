@@ -5,15 +5,18 @@ class CommentSerializer(serializers.ModelSerializer):
     likes_count = serializers.SerializerMethodField()
     user_liked = serializers.SerializerMethodField()
     replies_count = serializers.SerializerMethodField()
+    user_photo = serializers.SerializerMethodField()
+    user_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
         fields = [
-            'id', 'user', 'book', 'comment_text', 'reply_to',
+            'id', 'user', 'user_name', 'user_photo', 'book', 'comment_text', 'reply_to',
             'created_at', 'updated_at',
             'likes_count', 'user_liked', 'replies_count',
         ]
-        read_only_fields = ['id', 'user', 'created_at', 'updated_at', 'likes_count', 'user_liked', 'replies_count']
+        read_only_fields = ['id', 'user', 'created_at', 'updated_at', 'likes_count',
+                            'user_liked', 'replies_count', 'user_name', 'user_photo',]
 
     def get_likes_count(self, obj):
         # Count total likes on this comment
@@ -29,6 +32,26 @@ class CommentSerializer(serializers.ModelSerializer):
     def get_replies_count(self, obj):
         # Count direct replies to this comment
         return obj.replies.count()
+
+    def get_user_photo(self, obj):
+        """
+        Return the URL of the user's profile image, or None if no image is attached.
+        """
+        request = self.context.get('request')
+        image_field = obj.user.image  # this is an ImageFieldFile
+
+        # If there's no file, return None (or a default URL)
+        if not image_field or not getattr(image_field, 'url', None):
+            return None
+
+        # Build absolute URI if request is available, otherwise return the relative URL
+        url = image_field.url
+        if request is not None:
+            return request.build_absolute_uri(url)
+        return url
+
+    def get_user_name(self, obj):
+        return obj.user.username
 
     def validate_reply_to(self, value):
         # Enforce only one level deep replies
