@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, Avg
 
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
@@ -61,16 +61,16 @@ class ListViewSet(viewsets.ModelViewSet):
         permission_classes=[IsOwnerOrPublic],
     )
     def books(self, request, pk: int = None):
-        """
-        GET    /lists/{pk}/books/  → list all books in the list
-        POST   /lists/{pk}/books/  → add a book  (JSON: {"book_id": …})
-        DELETE /lists/{pk}/books/  → remove a book (JSON: {"book_id": …})
-        """
         list_obj = self.get_object()
 
-        # GET: list books
+        # GET: list books, now annotated with ratings_count & ratings_avg
         if request.method == 'GET':
-            qs = BookList.objects.filter(list=list_obj).select_related('book')
+            qs = (
+                BookList.objects
+                .filter(list=list_obj)
+                .select_related('book')
+                .annotate(ratings_avg=Avg('book__rating__rating'))
+            )
             page = self.paginate_queryset(qs)
             ser = BookInListSerializer(page, many=True)
             return self.get_paginated_response(ser.data)
