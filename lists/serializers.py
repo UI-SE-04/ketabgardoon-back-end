@@ -5,21 +5,32 @@ from .models import List, BookList
 from books.models import Book
 
 
+class IconField(serializers.Field):
+    """
+    A custom field which:
+     - On input, accepts a plain filename (e.g. "xyz.png")
+     - On output, returns the full URL (e.g. "/media/lists/icons/xyz.png")
+    """
+    def to_internal_value(self, data):
+        # validate that the client actually sent a filename string
+        if not isinstance(data, str):
+            raise serializers.ValidationError('Icon filename must be a string.')
+        return data  # this becomes validated_data['icon']
+
+    def to_representation(self, value):
+        # `value` here is the stored filename (e.g. "xyz.png")
+        print(value)
+        return List.get_icon_url(value)
+
+
 class ListSerializer(serializers.ModelSerializer):
-    """
-    Serializer for List:
-     - exposes icon URL (via the FK)
-     - makes `user`, `is_default` and `created_at` read-only
-    """
     user = serializers.IntegerField(source='user.id', read_only=True)
-    icon = serializers.SerializerMethodField()
+    icon = IconField()  # single field for both read & write
+
     class Meta:
         model = List
         fields = ['id', 'name', 'user', 'is_default', 'is_public', 'icon', 'created_at']
         read_only_fields = ['id', 'user', 'is_default', 'created_at']
-
-    def get_icon(self, obj):
-        return obj.get_icon_url()
 
 
 class BookInListSerializer(serializers.ModelSerializer):

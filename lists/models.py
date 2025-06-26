@@ -16,14 +16,15 @@ class List(models.Model):
     def __str__(self):
         return f"{self.name} - {self.user.username}"
 
-    def get_icon_url(self):
+    @staticmethod
+    def get_icon_url(icon):
         from django.conf import settings
-        return f"{settings.MEDIA_URL}lists/icons/{self.icon}"
+        return f"{settings.MEDIA_URL}lists/icons/{icon}"
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['user', 'name'], name='unique_list_name_per_user')
-        ]
+            constraints = [
+                models.UniqueConstraint(fields=['user', 'name'], name='unique_list_name_per_user')
+            ]
 
 
 class BookList(models.Model):
