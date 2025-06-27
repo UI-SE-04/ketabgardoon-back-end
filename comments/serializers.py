@@ -71,7 +71,7 @@ class UserCommentLikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserCommentLike
         fields = ['id', 'comment', 'user', 'created_at']
-        read_only_fields = ['id', 'user', 'created_at']
+        read_only_fields = ['id', 'comment', 'user', 'created_at']
 
     def create(self, validated_data):
         request = self.context.get('request')

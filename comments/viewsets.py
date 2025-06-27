@@ -36,7 +36,8 @@ class CommentViewSet(viewsets.ModelViewSet):
         # Ensures the `user` field is set from the authenticated user
         serializer.save(user=self.request.user)
 
-    @action(detail=True, methods=['get', 'post', 'delete'], permission_classes=[permissions.IsAuthenticatedOrReadOnly])
+    @action(detail=True, methods=['get', 'post', 'delete'], permission_classes=[permissions.IsAuthenticatedOrReadOnly],
+            serializer_class=UserCommentLikeSerializer)
     def like(self, request, pk=None):
         """
         GET: return whether the user liked this comment and total likes
@@ -68,6 +69,7 @@ class CommentViewSet(viewsets.ModelViewSet):
             if deleted:
                 return Response({'detail': 'Unliked.'}, status=status.HTTP_204_NO_CONTENT)
             return Response({'detail': 'No like to remove.'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserCommentLikeViewSet(viewsets.ModelViewSet):
     """
