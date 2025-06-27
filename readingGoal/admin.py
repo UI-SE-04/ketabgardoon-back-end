@@ -1,3 +1,6 @@
 from django.contrib import admin
 
-# Register your models here.
+from readingGoal.models import ReadingTarget
+
+admin.site.register(ReadingTarget)
+
