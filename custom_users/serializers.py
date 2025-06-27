@@ -108,7 +108,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         instance.first_name = validated_data.get('first_name', '')
         instance.last_name = validated_data.get('last_name', '')
         instance.is_private = validated_data.get('is_private', False)
-        instance.image = validated_data.get('image', None)
+        instance.image = validated_data.get('image', instance.image)
         instance.bio = validated_data.get('bio', '')
         # update password for signup or when is needed
         if 'password' in validated_data and validated_data['password']:

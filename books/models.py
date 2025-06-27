@@ -20,7 +20,12 @@ class Book(models.Model):
     summary = models.TextField(blank=True, null=True)
     publisher = models.ForeignKey(Publisher, null=True, blank=True, on_delete=models.SET_NULL)
     published_date = models.DateField(null=True, blank=True)
-    cover = models.ImageField(upload_to='books/', blank=True, null=True)
+    cover =  models.ImageField(
+        upload_to='books/',
+        blank=True,
+        null=True,
+        default='default_pics/default_book_cover.jpg'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     authors = models.ManyToManyField(Author, through='BookAuthor')
