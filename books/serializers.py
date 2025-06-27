@@ -69,7 +69,7 @@ class BookSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'summary', 'publisher', 'published_date',
             'cover', 'created_at', 'updated_at', 'authors', 'categories', 'stores',
-            'isbns', 'view_count', 'ratings_count', 'ratings_avg', 'stores',
+            'isbns', 'view_count', 'ratings_count', 'ratings_avg', 'stores','page_count'
         ]
         read_only_fields = ['id', 'view_count', 'ratings_count', 'ratings_avg',
                             'updated_at', 'created_at', 'stores',]
