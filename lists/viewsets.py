@@ -13,6 +13,10 @@ from lists.permissions import IsOwnerOrPublic
 from lists.serializers import ListSerializer, BookInListSerializer, BookListCreateSerializer
 from lists.filters import ListFilter
 
+from readingGoal.models import ReadingTarget
+from django.utils import timezone
+from jalali_date import date2jalali
+
 
 class ListViewSet(viewsets.ModelViewSet):
     """
@@ -82,21 +86,40 @@ class ListViewSet(viewsets.ModelViewSet):
         if book_id is None:
             raise ValidationError({"book_id": "This field is required."})
 
+        current_jalali_year = date2jalali(timezone.now()).year
+        reading_target, _ = ReadingTarget.objects.get_or_create(
+            user=list_obj.user,
+            year=current_jalali_year,
+            defaults={'target_books': 0, 'read_books': 0}
+        )
+
         # POST: add a book
         if request.method == 'POST':
             serializer = self.get_serializer(data=request.data, context={'list_obj': list_obj})
             serializer.is_valid(raise_exception=True)
             try:
                 entry = serializer.save()
+                if list_obj.name == 'خوانده شده' and list_obj.is_default:
+                    reading_target.read_books += 1
+                    reading_target.save()
             except Exception:
                 raise ValidationError({"detail": "Book already in list."})
             out = BookInListSerializer(entry)
             return Response(out.data, status=status.HTTP_201_CREATED)
 
         # DELETE: remove a book
-        deleted, _ = BookList.objects.filter(
-            list=list_obj, book_id=book_id
-        ).delete()
-        if not deleted:
+        try:
+            book_list_entry = BookList.objects.get(
+                list=list_obj,
+                book_id=book_id
+            )
+            # decrement read_books if removing from "خوانده شده" list
+            # and book was added in the current Jalali year
+            if (list_obj.name == 'خوانده شده' and list_obj.is_default and
+                    date2jalali(book_list_entry.added_at).year == current_jalali_year):
+                reading_target.read_books = max(0, reading_target.read_books - 1)
+                reading_target.save()
+            book_list_entry.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except BookList.DoesNotExist:
             raise NotFound(detail="Book not found in this list.")
-        return Response(status=status.HTTP_204_NO_CONTENT)
