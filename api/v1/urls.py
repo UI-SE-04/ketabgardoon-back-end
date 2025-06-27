@@ -40,7 +40,7 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),
-    path('books/<int:pk>/myrating', myrating, name='my-rating'),
+    path('books/<int:book_id>/myrating', myrating, name='my-rating'),
 
     path('password-reset/request/', PasswordResetRequestView.as_view(), name='password-reset-request'),
     path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
