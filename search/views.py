@@ -148,7 +148,6 @@ class CategorySearchView(APIView):
 
     def get(self, request):
         query = request.query_params.get('q', '').strip()
-        # sort parameter from query params
         sort = request.query_params.get('sort', '').strip()
         if not query:
             return Response(
@@ -159,30 +158,50 @@ class CategorySearchView(APIView):
         valid_book_sorts = ['title', '-title', 'published_date', '-published_date', 'page_count', '-page_count']
         sort_field = sort if sort in valid_book_sorts else None
         collator = Collator()
+
+        # Initial category query
         category_results = Category.objects.filter(
             Q(title__icontains=query)
-        ).distinct().prefetch_related('book_set__authors')
-        # sorting for books within categories
+        ).distinct()
+
+        # Sorting for books within categories
         if sort_field in valid_book_sorts:
             if sort_field in ['title', '-title']:
-                category_results = category_results.prefetch_related(
-                    Prefetch('book_set', queryset=Book.objects.all())
-                )
+                # Use a list to store sorted books for each category
+                sorted_categories = []
                 for category in category_results:
-                    category.book_set.set(
-                        sorted(
-                            category.book_set.all(),
-                            key=lambda x: collator.sort_key(x.title or ''),
-                            reverse=(sort_field == '-title')
-                        )
+                    # Fetch books for the category
+                    books = list(category.book_set.all().prefetch_related('authors'))
+                    # Sort books in Python using pyuca for Persian titles
+                    sorted_books = sorted(
+                        books,
+                        key=lambda x: collator.sort_key(x.title or ''),
+                        reverse=(sort_field == '-title')
                     )
+                    # Only include categories with books
+                    if sorted_books:
+                        # Create a new QuerySet for books to use in Prefetch
+                        book_ids = [book.id for book in sorted_books]
+                        sorted_books_queryset = Book.objects.filter(id__in=book_ids).prefetch_related('authors')
+                        # Attach sorted books to category using Prefetch
+                        category = Category.objects.filter(id=category.id).prefetch_related(
+                            Prefetch('book_set', queryset=sorted_books_queryset)
+                        ).first()
+                        sorted_categories.append(category)
+                category_results = sorted_categories
             else:
+                # Use database sorting for other fields
                 category_results = category_results.prefetch_related(
-                    Prefetch('book_set', queryset=Book.objects.order_by(sort_field))
+                    Prefetch('book_set', queryset=Book.objects.order_by(sort_field).prefetch_related('authors'))
                 )
+        else:
+            # Default prefetch without sorting
+            category_results = category_results.prefetch_related('book_set__authors')
 
+        # Filter out categories with no books
+        category_results = [cat for cat in category_results if cat.book_set.exists()]
+        # Apply pagination
         paginator = self.pagination_class()
         paginated_categories = paginator.paginate_queryset(category_results, request)
-
         serializer = CategorySerializer(paginated_categories, many=True)
         return paginator.get_paginated_response(serializer.data)
