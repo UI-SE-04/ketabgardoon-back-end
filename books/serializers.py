@@ -1,6 +1,7 @@
 from urllib.parse import urljoin
 
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
 from rest_framework import serializers
 
 from ketabgardoon.settings import MEDIA_URL
@@ -118,7 +119,14 @@ class BookIdListSerializer(serializers.Serializer):
 
 
 class RatingSerializer(serializers.ModelSerializer):
+    rating = serializers.FloatField(
+        validators=[
+            MinValueValidator(0.0),
+            MaxValueValidator(5.0)  # Adjust max value as needed
+        ]
+    )
     class Meta:
         model = Rating
         fields = ['id', 'book', 'user', 'rating', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'book', 'user', 'created_at', 'updated_at']
+
