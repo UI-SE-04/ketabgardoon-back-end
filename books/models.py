@@ -20,7 +20,7 @@ class Book(models.Model):
     summary = models.TextField(blank=True, null=True)
     publisher = models.ForeignKey(Publisher, null=True, blank=True, on_delete=models.SET_NULL)
     published_date = models.DateField(null=True, blank=True)
-    cover =  models.ImageField(
+    cover = models.ImageField(
         upload_to='books/',
         blank=True,
         null=True,

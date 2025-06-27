@@ -34,10 +34,10 @@ class BookSerializer(serializers.ModelSerializer):
     categories = serializers.StringRelatedField(many=True)
     ratings_count = serializers.SerializerMethodField()
     ratings_avg = serializers.SerializerMethodField()
-
+    book_cover = serializers.ImageField(source='cover', read_only=True)
     class Meta:
         model = Book
-        fields = ['id', 'title', 'authors', 'categories', 'ratings_count', 'ratings_avg']
+        fields = ['id', 'title', 'authors', 'categories', 'ratings_count', 'ratings_avg', 'book_cover']
         read_only_fields = ['ratings_count', 'ratings_avg']
 
     # ADDED: Methods for ratings_count and ratings_avg
