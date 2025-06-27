@@ -3,7 +3,12 @@ from django.contrib.auth.models import AbstractUser
 
 class CustomUser(AbstractUser):
     is_private = models.BooleanField(default=False)
-    image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
+    image = models.ImageField(
+        upload_to='profile_images/',
+        blank=True,
+        null=True,
+        default='default_pics/default_profile_pic.jpg'
+    )
     bio = models.TextField(blank=True, null=True)
     # for authentication
     is_email_verified = models.BooleanField(default=False)
