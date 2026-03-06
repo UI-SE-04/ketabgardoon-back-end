@@ -331,7 +331,7 @@ Contributions are welcome! Please fork the repository and submit a pull request.
 
 # 🎓 Academic Context
 
-Developed as part of a **Software Engineering**
+Developed as part of a **Software Engineering course**
 
 📅 Spring 2025
 
