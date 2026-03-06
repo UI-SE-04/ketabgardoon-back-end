@@ -329,6 +329,14 @@ Contributions are welcome! Please fork the repository and submit a pull request.
 
 ---
 
+# 🎓 Academic Context
+
+Developed as part of a **Software Engineering**
+
+📅 Spring 2025
+
+---
+
 # 📄 License
 
 This project is licensed under the **MIT License** – see the `LICENSE` file for details.
